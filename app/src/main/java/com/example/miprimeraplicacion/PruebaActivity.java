@@ -199,6 +199,8 @@ public class PruebaActivity extends AppCompatActivity {
         }
     }
 
+    
+
     private boolean validateConfirmPassword() {
         String passwordInput = passwordEditText.getText().toString().trim();
         String confirmPasswordInput = confirmPasswordEditText.getText().toString().trim();
