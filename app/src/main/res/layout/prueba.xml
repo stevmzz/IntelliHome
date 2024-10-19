@@ -265,7 +265,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Verification: Favorite food?"
+                android:hint="Verification: ¿Favorite food?"
                 android:paddingStart="8dp"
                 android:textColor="#000"
                 android:textColorHint="#999" />
@@ -294,6 +294,99 @@
                 android:textColor="#000"
                 android:textColorHint="#999" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/edittext_background"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Type User"
+                android:textColor="#000"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/logo" />
+
+                <RadioGroup
+                    android:id="@+id/userTypeGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp">
+
+                    <RadioButton
+                        android:id="@+id/radioArrendador"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Arrendador"
+                        android:textColor="#000"
+                        android:paddingEnd="16dp" />
+
+                    <RadioButton
+                        android:id="@+id/radioAlquilador"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Alquilador"
+                        android:textColor="#000" />
+                </RadioGroup>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/edittext_background"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date Birth"
+                android:textColor="#000"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/logo" />
+
+                <EditText
+                    android:id="@+id/fechaNacimiento"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="DD/MM/AAAA"
+                    android:paddingStart="8dp"
+                    android:textColor="#000"
+                    android:textColorHint="#999" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+
         <Button
             android:id="@+id/buttonSelectPhoto"
             android:layout_width="wrap_content"
@@ -308,6 +401,146 @@
             android:layout_marginTop="16dp"
             android:contentDescription="Imagen seleccionada"
             android:scaleType="centerCrop" />
+
+        <LinearLayout
+            android:layout_marginTop="30dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/edittext_background"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Términos y Condiciones de Uso de Intellihome"
+                android:textColor="#000"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fecha de entrada en vigor: [Fecha]"
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bienvenido a Intellihome. Al acceder y utilizar nuestra aplicación, usted acepta cumplir con los siguientes términos y condiciones. Si no está de acuerdo con estos términos, le solicitamos que no utilice nuestra aplicación."
+                android:textColor="#000"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. Definiciones\n• Intellihome: Se refiere a la aplicación móvil y/o plataforma web que facilita el alquiler de propiedades.\n• Usuario: Cualquier persona que se registre y utilice Intellihome.\n• Propiedad: Cualquier inmueble disponible para alquiler a través de Intellihome."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2. Aceptación de Términos\nAl registrarse y utilizar Intellihome, usted acepta estos términos y condiciones en su totalidad. Nos reservamos el derecho a modificar estos términos en cualquier momento, por lo que recomendamos revisarlos periódicamente."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3. Registro de Usuario\nPara utilizar algunas funcionalidades de la aplicación, es necesario crear una cuenta. El Usuario se compromete a proporcionar información veraz y actualizada. Es responsabilidad del Usuario mantener la confidencialidad de sus credenciales de acceso."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="4. Uso de la Aplicación\n• Intellihome permite a los Usuarios buscar y alquilar propiedades.\n• El Usuario se compromete a utilizar la aplicación solo para fines lícitos y de acuerdo con las leyes aplicables."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="5. Propiedades\n• Las propiedades listadas en Intellihome son ofrecidas por propietarios y agentes inmobiliarios.\n• Intellihome no es responsable de la veracidad, disponibilidad o estado de las propiedades."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="6. Comisiones y Pagos\n• Intellihome puede cobrar comisiones por los servicios ofrecidos. Las tarifas serán comunicadas claramente antes de confirmar cualquier transacción.\n• El Usuario acepta realizar los pagos a través de los métodos habilitados en la aplicación."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="7. Política de Cancelación\nLas políticas de cancelación varían según cada propiedad y serán indicadas en el anuncio correspondiente. Es responsabilidad del Usuario revisar estas políticas antes de realizar una reserva."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="8. Limitación de Responsabilidad\nIntellihome no será responsable de daños directos, indirectos, incidentales o consecuentes que surjan del uso de la aplicación o de la imposibilidad de uso."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="9. Propiedad Intelectual\nTodo el contenido de Intellihome, incluyendo textos, gráficos y logotipos, está protegido por derechos de propiedad intelectual. Queda prohibida la reproducción o distribución sin autorización."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="10. Modificaciones a los Términos\nNos reservamos el derecho de modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor al ser publicadas en la aplicación. El uso continuado de Intellihome tras la publicación de cambios implica la aceptación de los mismos."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="11. Legislación Aplicable\nEstos términos se rigen por las leyes de [país/estado]. Cualquier disputa relacionada con el uso de Intellihome será resuelta en los tribunales de [ciudad/estado]."
+                android:textColor="#000"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="12. Contacto\nPara cualquier pregunta o inquietud sobre estos términos, por favor contáctenos en [correo electrónico]."
+                android:textColor="#000"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/buttonAccept"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Aceptar"
+                    android:backgroundTint="@color/white" />
+
+                <Button
+                    android:id="@+id/buttonReject"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rechazar"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/white" />
+            </LinearLayout>
+        </LinearLayout>
+
+
         <Button
             android:id="@+id/buttonContinue"
             android:layout_width="match_parent"
@@ -319,4 +552,7 @@
             android:textStyle="bold" />
 
     </LinearLayout>
+
+
+
     </ScrollView>
