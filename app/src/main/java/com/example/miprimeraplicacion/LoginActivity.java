@@ -60,17 +60,6 @@ public class LoginActivity extends AppCompatActivity {
     private void handleLogin() {
         Log.d(TAG, "Iniciando proceso de login");
 
-        // Hacer que el EditText pierda el enfoque
-        usernameEditText.clearFocus();
-        passwordEditText.clearFocus();
-
-        // Ocultar el teclado
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        View view = getCurrentFocus();
-        if (view != null) {
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-
         String username = usernameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
@@ -87,15 +76,20 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 Log.d(TAG, "Respuesta del servidor recibida: " + response);
+
+                // Es importante usar runOnUiThread para modificaciones de UI
                 runOnUiThread(() -> {
                     if ("SUCCESS".equals(response)) {
                         Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "Login exitoso, iniciando PaginaAlquiladorActivity");
+                        Log.d(TAG, "Login exitoso, iniciando ExitActivity");
+
+                        // Crear y lanzar el intent inmediatamente
                         Intent intent = new Intent(LoginActivity.this, ExitActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
-                        finish();
+                        finish(); // Cerrar LoginActivity
                     } else {
-                        Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show();
                         Log.d(TAG, "Login fallido: " + response);
                     }
                 });
@@ -105,7 +99,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onError(String error) {
                 Log.e(TAG, "Error en la comunicación con el servidor: " + error);
                 runOnUiThread(() -> {
-                    Toast.makeText(LoginActivity.this, "Error de conexión: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Error de conexión: " + error, Toast.LENGTH_LONG).show();
                 });
             }
         });

@@ -301,7 +301,7 @@ public class PruebaActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 if (response.equals("SUCCESS")) {
                     Toast.makeText(PruebaActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(PruebaActivity.this, LoginActivity.class);
+                    Intent intent = new Intent(PruebaActivity.this, ExitActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
