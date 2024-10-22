@@ -113,8 +113,7 @@ public class PruebaActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (validateAllFields()) {
-                    Intent intent = new Intent(PruebaActivity.this, ExitActivity.class);
-                    startActivity(intent);
+                    registerUser();
                 } else {
                     Toast.makeText(PruebaActivity.this, "Por favor, corrige los errores.", Toast.LENGTH_SHORT).show();
                 }
@@ -182,8 +181,6 @@ public class PruebaActivity extends AppCompatActivity {
         isValid &= validateEmail();
         isValid &= validateBirthDate();
 
-        // Aquí puedes añadir más validaciones para otros campos si es necesario
-
         return isValid;
     }
 
@@ -198,8 +195,6 @@ public class PruebaActivity extends AppCompatActivity {
             return true;
         }
     }
-
-    
 
     private boolean validateConfirmPassword() {
         String passwordInput = passwordEditText.getText().toString().trim();
@@ -285,5 +280,39 @@ public class PruebaActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             imageViewPhoto.setImageURI(imageUri);
         }
+    }
+
+    private void registerUser() {
+        String userData = String.format("REGISTER:%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                fullNameEditText.getText().toString(),
+                usernameEditText.getText().toString(),
+                emailEditText.getText().toString(),
+                passwordEditText.getText().toString(),
+                descriptionEditText.getText().toString(),
+                hobbiesEditText.getText().toString(),
+                phoneEditText.getText().toString(),
+                verificationEditText.getText().toString(),
+                ibanEditText.getText().toString(),
+                birthDateEditText.getText().toString(),
+                userTypeGroup.getCheckedRadioButtonId() == R.id.userTypeGroup ? "provider" : "client");
+
+        ServerCommunication.sendToServer(userData, new ServerCommunication.ServerResponseListener() {
+            @Override
+            public void onResponse(String response) {
+                if (response.equals("SUCCESS")) {
+                    Toast.makeText(PruebaActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(PruebaActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(PruebaActivity.this, "Error en el registro: " + response, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                Toast.makeText(PruebaActivity.this, "Error de conexión: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
