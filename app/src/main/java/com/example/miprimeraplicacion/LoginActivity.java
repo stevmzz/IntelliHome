@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -40,6 +42,24 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        // Añadir TextWatcher para convertir usuario a minúsculas mientras escribe
+        usernameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String text = s.toString();
+                if (!text.equals(text.toLowerCase())) {
+                    usernameEditText.setText(text.toLowerCase());
+                    usernameEditText.setSelection(text.length());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
         showHidePasswordButton.setOnClickListener(v -> togglePasswordVisibility());
         loginButton.setOnClickListener(v -> handleLogin());
         forgotPasswordButton.setOnClickListener(v -> handleForgotPassword());
@@ -60,7 +80,15 @@ public class LoginActivity extends AppCompatActivity {
     private void handleLogin() {
         Log.d(TAG, "Iniciando proceso de login");
 
-        String username = usernameEditText.getText().toString().trim();
+        // Ocultar teclado
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+        // Asegurar que el usuario esté en minúsculas
+        String username = usernameEditText.getText().toString().trim().toLowerCase();
         String password = passwordEditText.getText().toString().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
@@ -76,18 +104,15 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 Log.d(TAG, "Respuesta del servidor recibida: " + response);
-
-                // Es importante usar runOnUiThread para modificaciones de UI
                 runOnUiThread(() -> {
                     if ("SUCCESS".equals(response)) {
                         Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "Login exitoso, iniciando ExitActivity");
 
-                        // Crear y lanzar el intent inmediatamente
-                        Intent intent = new Intent(LoginActivity.this, ExitActivity.class);
+                        Intent intent = new Intent(LoginActivity.this, AlquiladorActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
-                        finish(); // Cerrar LoginActivity
+                        finish();
                     } else {
                         Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show();
                         Log.d(TAG, "Login fallido: " + response);

@@ -9,13 +9,12 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/intellihome"
-        android:label="Intellihome"
+        android:label="IntelliHome"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MiPrimerAplicacion"
         tools:targetApi="31">
 
-        <activity android:name=".ExitActivity"></activity>
         <activity android:name=".LoginActivity"></activity>
 
         <activity
@@ -34,6 +33,11 @@
 
         <activity
             android:name=".PruebaActivity"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".AlquiladorActivity"
             android:exported="true">
         </activity>
 

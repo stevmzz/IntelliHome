@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -84,8 +86,8 @@ public class PruebaActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         };
 
+        // Agregar TextWatcher a todos los campos
         fullNameEditText.addTextChangedListener(textWatcher);
-        usernameEditText.addTextChangedListener(textWatcher);
         emailEditText.addTextChangedListener(textWatcher);
         confirmPasswordEditText.addTextChangedListener(textWatcher);
         descriptionEditText.addTextChangedListener(textWatcher);
@@ -95,6 +97,26 @@ public class PruebaActivity extends AppCompatActivity {
         ibanEditText.addTextChangedListener(textWatcher);
         birthDateEditText.addTextChangedListener(textWatcher);
 
+        // TextWatcher especial para username (conversión a minúsculas)
+        usernameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String text = s.toString();
+                if (!text.equals(text.toLowerCase())) {
+                    usernameEditText.setText(text.toLowerCase());
+                    usernameEditText.setSelection(text.length());
+                }
+                checkFieldsForEmptyValues();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // TextWatcher para validación de contraseña
         passwordEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -109,51 +131,28 @@ public class PruebaActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        buttonContinue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (validateAllFields()) {
-                    registerUser();
-                } else {
-                    Toast.makeText(PruebaActivity.this, "Por favor, corrige los errores.", Toast.LENGTH_SHORT).show();
-                }
+        // Click listeners
+        buttonContinue.setOnClickListener(v -> {
+            if (validateAllFields()) {
+                registerUser();
+            } else {
+                Toast.makeText(PruebaActivity.this, "Por favor, corrige los errores.", Toast.LENGTH_SHORT).show();
             }
         });
 
-        buttonSelectPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openGallery();
-            }
-        });
+        buttonSelectPhoto.setOnClickListener(v -> openGallery());
 
-        showHidePasswordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                togglePasswordVisibility(passwordEditText, showHidePasswordButton);
-            }
-        });
+        showHidePasswordButton.setOnClickListener(v ->
+                togglePasswordVisibility(passwordEditText, showHidePasswordButton));
 
-        showHideConfirmPasswordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                togglePasswordVisibility(confirmPasswordEditText, showHideConfirmPasswordButton);
-            }
-        });
+        showHideConfirmPasswordButton.setOnClickListener(v ->
+                togglePasswordVisibility(confirmPasswordEditText, showHideConfirmPasswordButton));
 
-        buttonAccept.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(PruebaActivity.this, "Términos y condiciones aceptados", Toast.LENGTH_SHORT).show();
-            }
-        });
+        buttonAccept.setOnClickListener(v ->
+                Toast.makeText(PruebaActivity.this, "Términos y condiciones aceptados", Toast.LENGTH_SHORT).show());
 
-        buttonReject.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(PruebaActivity.this, "Debe aceptar los términos y condiciones para continuar", Toast.LENGTH_SHORT).show();
-            }
-        });
+        buttonReject.setOnClickListener(v ->
+                Toast.makeText(PruebaActivity.this, "Debe aceptar los términos y condiciones para continuar", Toast.LENGTH_SHORT).show());
     }
 
     private void checkFieldsForEmptyValues() {
@@ -176,10 +175,71 @@ public class PruebaActivity extends AppCompatActivity {
     private boolean validateAllFields() {
         boolean isValid = true;
 
-        isValid &= validatePassword();
-        isValid &= validateConfirmPassword();
-        isValid &= validateEmail();
-        isValid &= validateBirthDate();
+        // Validar nombre completo
+        String fullName = fullNameEditText.getText().toString().trim();
+        if (fullName.length() < 3) {
+            fullNameEditText.setError("El nombre debe tener al menos 3 caracteres");
+            isValid = false;
+        }
+
+        // Validar usuario
+        String username = usernameEditText.getText().toString().trim();
+        if (username.length() < 4) {
+            usernameEditText.setError("El usuario debe tener al menos 4 caracteres");
+            isValid = false;
+        }
+
+        // Validar email
+        if (!validateEmail()) {
+            isValid = false;
+        }
+
+        // Validar contraseñas
+        if (!validatePassword()) {
+            isValid = false;
+        }
+        if (!validateConfirmPassword()) {
+            isValid = false;
+        }
+
+        // Validar descripción
+        String description = descriptionEditText.getText().toString().trim();
+        if (description.length() < 10) {
+            descriptionEditText.setError("La descripción debe tener al menos 10 caracteres");
+            isValid = false;
+        }
+
+        // Validar hobbies
+        String hobbies = hobbiesEditText.getText().toString().trim();
+        if (hobbies.length() < 5) {
+            hobbiesEditText.setError("Los hobbies deben tener al menos 5 caracteres");
+            isValid = false;
+        }
+
+        // Validar teléfono (8 dígitos)
+        String phone = phoneEditText.getText().toString().trim();
+        if (!phone.matches("\\d{8}")) {
+            phoneEditText.setError("El teléfono debe tener 8 dígitos");
+            isValid = false;
+        }
+
+        // Validar IBAN (CR + 20-25 números)
+        String iban = ibanEditText.getText().toString().trim().toUpperCase();
+        if (!iban.startsWith("CR") || !iban.substring(2).matches("[0-9]{20,25}")) {
+            ibanEditText.setError("IBAN inválido (formato: CR + 20-25 números)");
+            isValid = false;
+        }
+
+        // Validar fecha de nacimiento
+        if (!validateBirthDate()) {
+            isValid = false;
+        }
+
+        // Validar tipo de usuario
+        if (userTypeGroup.getCheckedRadioButtonId() == -1) {
+            Toast.makeText(this, "Seleccione un tipo de usuario", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
 
         return isValid;
     }
@@ -250,7 +310,7 @@ public class PruebaActivity extends AppCompatActivity {
                 return true;
             }
         } catch (ParseException e) {
-            birthDateEditText.setError("Por favor, ingrese una fecha válida en formato DD/MM/AAAA.");
+            birthDateEditText.setError("Por favor, ingrese una fecha válida en formato DD/MM/YYYY.");
             return false;
         }
     }
@@ -283,35 +343,57 @@ public class PruebaActivity extends AppCompatActivity {
     }
 
     private void registerUser() {
+        // Ocultar teclado
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
         String userData = String.format("REGISTER:%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
-                fullNameEditText.getText().toString(),
-                usernameEditText.getText().toString(),
-                emailEditText.getText().toString(),
-                passwordEditText.getText().toString(),
-                descriptionEditText.getText().toString(),
-                hobbiesEditText.getText().toString(),
-                phoneEditText.getText().toString(),
-                verificationEditText.getText().toString(),
-                ibanEditText.getText().toString(),
-                birthDateEditText.getText().toString(),
+                fullNameEditText.getText().toString().trim(),
+                usernameEditText.getText().toString().trim().toLowerCase(),
+                emailEditText.getText().toString().trim(),
+                passwordEditText.getText().toString().trim(),
+                descriptionEditText.getText().toString().trim(),
+                hobbiesEditText.getText().toString().trim(),
+                phoneEditText.getText().toString().trim(),
+                verificationEditText.getText().toString().trim().toUpperCase(),
+                ibanEditText.getText().toString().trim().toUpperCase(),
+                birthDateEditText.getText().toString().trim(),
                 userTypeGroup.getCheckedRadioButtonId() == R.id.userTypeGroup ? "provider" : "client");
 
         ServerCommunication.sendToServer(userData, new ServerCommunication.ServerResponseListener() {
             @Override
             public void onResponse(String response) {
-                if (response.equals("SUCCESS")) {
-                    Toast.makeText(PruebaActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(PruebaActivity.this, ExitActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(PruebaActivity.this, "Error en el registro: " + response, Toast.LENGTH_SHORT).show();
-                }
+                runOnUiThread(() -> {
+                    if ("SUCCESS".equals(response)) {
+                        Toast.makeText(PruebaActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(PruebaActivity.this, PrincipalActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        // Manejar diferentes tipos de errores del servidor
+                        String errorMessage;
+                        if (response.contains("Usuario ya existe")) {
+                            errorMessage = "El nombre de usuario ya está en uso";
+                            usernameEditText.setError(errorMessage);
+                        } else if (response.contains("Email ya registrado")) {
+                            errorMessage = "El email ya está registrado";
+                            emailEditText.setError(errorMessage);
+                        } else {
+                            errorMessage = "Error en el registro: " + response;
+                        }
+                        Toast.makeText(PruebaActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
             }
 
             @Override
             public void onError(String error) {
-                Toast.makeText(PruebaActivity.this, "Error de conexión: " + error, Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    Toast.makeText(PruebaActivity.this, "Error de conexión: " + error, Toast.LENGTH_LONG).show();
+                });
             }
         });
     }

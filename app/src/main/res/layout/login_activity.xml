@@ -13,7 +13,8 @@
         android:layout_height="153dp"
         android:contentDescription="Logo"
         android:gravity="center_horizontal"
-        android:src="@drawable/logo" />
+        android:src="@drawable/logo"
+        android:layout_marginBottom="10dp"/>
 
 
     <LinearLayout
@@ -88,8 +89,8 @@
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#e0f7fa"
+        android:layout_marginTop="6dp"
+        android:backgroundTint="#a1ced4"
         android:text="forgot password?"
         android:textColor="#ffffff"
         android:textStyle="bold" />

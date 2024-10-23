@@ -11,7 +11,7 @@ android:id="@+id/logoImage"
 android:layout_width="150dp"
 android:layout_height="150dp"
 android:layout_centerHorizontal="true"
-android:layout_marginBottom="32dp"
+android:layout_marginVertical="32dp"
 android:src="@drawable/logo" />
 
     <!-- Botón Register -->
@@ -34,6 +34,7 @@ android:layout_height="wrap_content"
 android:layout_below="@id/buttonRegister"
 android:layout_marginTop="16dp"
 android:backgroundTint="#81d4fa"
+    android:layout_marginBottom="20dp"
     android:text="Login"
     android:textColor="#ffffff"
     android:textStyle="bold" />
@@ -47,7 +48,8 @@ android:layout_below="@id/buttonLogin"
 android:layout_marginTop="16dp"
 android:src="@drawable/google"
     android:background="?attr/selectableItemBackgroundBorderless"
-    android:scaleType="centerInside" />
+    android:scaleType="centerInside"
+    />
 
     <!-- Botón con imagen 2 -->
 <ImageButton
