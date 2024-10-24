@@ -50,6 +50,13 @@ public class AlquiladorActivity extends AppCompatActivity {
     private ArrayAdapter<String> searchAdapter;
     private List<String> locations;
 
+    // Declarar referencias para los botones del menú
+    private LinearLayout menuOptionsLayout;
+    private Button menuProfileButton;
+    private Button menuSettingsButton;
+    private Button menuMonitoringButton;
+    private Button menuHistoryButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +68,16 @@ public class AlquiladorActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
+        // Inicializar las vistas del menú
+        menuOptionsLayout = findViewById(R.id.menuOptionsLayout);
+        menuProfileButton = findViewById(R.id.menu_profile);
+        menuSettingsButton = findViewById(R.id.menu_settings);
+        menuMonitoringButton = findViewById(R.id.menu_monitoring);
+        menuHistoryButton = findViewById(R.id.menu_history);
+
+        // Ocultar el menú inicialmente
+        menuOptionsLayout.setVisibility(View.GONE);
+
         // Vistas principales
         logoImageView = findViewById(R.id.logoImageView);
         topButton = findViewById(R.id.topButton);
@@ -78,8 +95,7 @@ public class AlquiladorActivity extends AppCompatActivity {
         clearFiltersButton = findViewById(R.id.clearFiltersButton);
         applyFiltersButton = findViewById(R.id.applyFiltersButton);
 
-        // Inicialmente ocultamos el menú de filtros
-        filterMenu.setVisibility(View.GONE);
+        filterMenu.setVisibility(View.GONE); // Ya estaba en tu código
     }
 
     private void setupSearchAutocomplete() {
@@ -126,93 +142,21 @@ public class AlquiladorActivity extends AppCompatActivity {
         }
     }
 
-    private void showPopupMenu(View view) {
-        PopupMenu popup = new PopupMenu(this, view, Gravity.END);
-        popup.getMenuInflater().inflate(R.menu.top_menu, popup.getMenu());
-
-        popup.setOnMenuItemClickListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.menu_profile) {
-                // Implementar navegación al perfil
-                Toast.makeText(this, "Perfil seleccionado", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (id == R.id.menu_monitoring) {
-                // Implementar navegación al monitoreo
-                Toast.makeText(this, "Monitoreo seleccionado", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (id == R.id.menu_settings) {
-                // Implementar navegación a ajustes
-                Toast.makeText(this, "Ajustes seleccionado", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (id == R.id.menu_history) {
-                // Implementar navegación al historial
-                Toast.makeText(this, "Historial seleccionado", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-            return false;
+    private void setupListeners() {
+        // Listener para el botón "Menú"
+        topButton.setOnClickListener(v -> {
+            hideKeyboard(v);
+            toggleMenuOptions();
         });
 
-        popup.show();
-    }
+        // Listener para el botón "Monitoreo"
+        menuMonitoringButton.setOnClickListener(v -> {
+            // Navegar a la actividad de monitoreo
+            Intent intent = new Intent(AlquiladorActivity.this, monitoreo_acti.class);
+            startActivity(intent);
+        });
 
-    private void initializeLocations() {
-        // Agregar provincias y lugares principales de Costa Rica
-        locations.add("San José, Costa Rica");
-        locations.add("San José, Escazú");
-        locations.add("San José, Santa Ana");
-        locations.add("San José, Moravia");
-        locations.add("San José, Curridabat");
-        locations.add("Alajuela, Costa Rica");
-        locations.add("Alajuela, La Fortuna");
-        locations.add("Alajuela, Poás");
-        locations.add("Cartago, Costa Rica");
-        locations.add("Cartago, Tres Ríos");
-        locations.add("Heredia, Costa Rica");
-        locations.add("Heredia, San Pablo");
-        locations.add("Heredia, Santo Domingo");
-        locations.add("Guanacaste, Liberia");
-        locations.add("Guanacaste, Tamarindo");
-        locations.add("Guanacaste, Nosara");
-        locations.add("Guanacaste, Flamingo");
-        locations.add("Puntarenas, Costa Rica");
-        locations.add("Puntarenas, Jacó");
-        locations.add("Puntarenas, Manuel Antonio");
-        locations.add("Puntarenas, Drake");
-        locations.add("Limón, Costa Rica");
-        locations.add("Limón, Puerto Viejo");
-        locations.add("Limón, Cahuita");
-        locations.add("Limón, Pueblo Nuevo");
-        locations.add("Limón, Cieneguita");
-    }
-
-    private void filterLocations(String text) {
-        if (text == null || text.isEmpty()) {
-            searchAdapter.clear();
-            searchAdapter.notifyDataSetChanged();
-            return;
-        }
-
-        List<String> filteredLocations = new ArrayList<>();
-        String searchText = text.toLowerCase();
-
-        // Filtrar ubicaciones que coincidan
-        for (String location : locations) {
-            if (location.toLowerCase().contains(searchText)) {
-                filteredLocations.add(location);
-                if (filteredLocations.size() >= 4) { // Limitar a 4 sugerencias
-                    break;
-                }
-            }
-        }
-
-        // Actualizar el adaptador
-        searchAdapter.clear();
-        searchAdapter.addAll(filteredLocations);
-        searchAdapter.notifyDataSetChanged();
-    }
-
-    private void setupListeners() {
-        // Logo click
+        // Otros listeners ya existentes...
         logoImageView.setOnClickListener(v -> {
             hideKeyboard(v);
             Intent intent = new Intent(this, AlquiladorActivity.class);
@@ -222,30 +166,30 @@ public class AlquiladorActivity extends AppCompatActivity {
             overridePendingTransition(0, 0);
         });
 
-        // Botón superior con menú popup
-        topButton.setOnClickListener(v -> {
-            hideKeyboard(v);
-            showPopupMenu(v);
-        });
-
-        // Botón de filtros
         filterButton.setOnClickListener(v -> {
             hideKeyboard(v);
             toggleFilterMenu();
         });
 
-        // Botones del menú de filtros
         clearFiltersButton.setOnClickListener(v -> clearFilters());
         applyFiltersButton.setOnClickListener(v -> {
             applyFilters();
             hideKeyboard(v);
         });
 
-        // Ocultar teclado cuando se toca fuera de los campos de texto
         scrollView.setOnTouchListener((v, event) -> {
             hideKeyboard(v);
             return false;
         });
+    }
+
+    // Método para mostrar/ocultar las opciones del menú
+    private void toggleMenuOptions() {
+        if (menuOptionsLayout.getVisibility() == View.GONE) {
+            menuOptionsLayout.setVisibility(View.VISIBLE);
+        } else {
+            menuOptionsLayout.setVisibility(View.GONE);
+        }
     }
 
     private void toggleFilterMenu() {
@@ -284,5 +228,46 @@ public class AlquiladorActivity extends AppCompatActivity {
 
         Toast.makeText(this, filterSummary, Toast.LENGTH_LONG).show();
         toggleFilterMenu(); // Ocultar el menú después de aplicar
+    }
+
+    private void initializeLocations() {
+        // Agregar provincias y lugares principales de Costa Rica
+        locations.add("San José, Costa Rica");
+        locations.add("San José, Escazú");
+        locations.add("San José, Santa Ana");
+        locations.add("San José, Moravia");
+        locations.add("San José, Curridabat");
+        locations.add("Alajuela, Costa Rica");
+        locations.add("Alajuela, La Fortuna");
+        locations.add("Alajuela, Poás");
+        locations.add("Cartago, Costa Rica");
+        locations.add("Cartago, Tres Ríos");
+        locations.add("Heredia, Costa Rica");
+        locations.add("Heredia, San Pablo");
+        locations.add("Heredia, Santo Domingo");
+        locations.add("Guanacaste, Liberia");
+        locations.add("Guanacaste, Tamarindo");
+        locations.add("Guanacaste, Nosara");
+        locations.add("Guanacaste, Flamingo");
+        locations.add("Puntarenas, Costa Rica");
+        locations.add("Puntarenas, Jacó");
+        locations.add("Puntarenas, Manuel Antonio");
+        locations.add("Puntarenas, Drake");
+        locations.add("Limón, Costa Rica");
+        locations.add("Limón, Puerto Viejo");
+        locations.add("Limón, Cahuita");
+        locations.add("Limón, Tortuguero");
+    }
+
+    private void filterLocations(String query) {
+        List<String> filteredLocations = new ArrayList<>();
+        for (String location : locations) {
+            if (location.toLowerCase().contains(query.toLowerCase())) {
+                filteredLocations.add(location);
+            }
+        }
+        searchAdapter.clear();
+        searchAdapter.addAll(filteredLocations);
+        searchAdapter.notifyDataSetChanged();
     }
 }
