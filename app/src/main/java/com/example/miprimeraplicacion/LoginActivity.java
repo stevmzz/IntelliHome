@@ -2,6 +2,7 @@ package com.example.miprimeraplicacion;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.Editable;
@@ -77,6 +78,13 @@ public class LoginActivity extends AppCompatActivity {
         passwordEditText.setSelection(passwordEditText.length());
     }
 
+    private void saveUserType(String userType) {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("user_type", userType);
+        editor.apply();
+    }
+
     private void handleLogin() {
         Log.d(TAG, "Iniciando proceso de login");
 
@@ -105,17 +113,46 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 Log.d(TAG, "Respuesta del servidor recibida: " + response);
                 runOnUiThread(() -> {
-                    if ("SUCCESS".equals(response)) {
-                        Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "Login exitoso, iniciando ExitActivity");
+                    String[] parts = response.split(":");
+                    if (parts[0].equals("SUCCESS")) {
+                        String userType = parts.length > 1 ? parts[1].trim() : "";
+                        Log.d(TAG, "Tipo de usuario recibido: " + userType);
 
-                        Intent intent = new Intent(LoginActivity.this, AlquiladorActivity.class);
+                        if (userType.isEmpty()) {
+                            Log.e(TAG, "Error: Tipo de usuario vacío en la respuesta");
+                            Toast.makeText(LoginActivity.this, "Error: No se pudo determinar el tipo de usuario", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        // Guardar el tipo de usuario
+                        saveUserType(userType);
+                        Log.d(TAG, "Tipo de usuario guardado en SharedPreferences: " + userType);
+
+                        Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso como " + userType, Toast.LENGTH_SHORT).show();
+
+                        // Redirigir según el tipo de usuario
+                        Intent intent;
+                        if ("alquilador".equals(userType)) {
+                            intent = new Intent(LoginActivity.this, AlquiladorActivity.class);
+                        } else if ("arrendador".equals(userType)) {
+                            intent = new Intent(LoginActivity.this, ArrendadorActivity.class);
+                        } else {
+                            Log.e(TAG, "Tipo de usuario no reconocido: " + userType);
+                            Toast.makeText(LoginActivity.this, "Error: Tipo de usuario no válido", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show();
-                        Log.d(TAG, "Login fallido: " + response);
+                        String errorMessage = parts.length > 1 ? parts[1] : "Error desconocido";
+                        Log.d(TAG, "Login fallido: " + errorMessage);
+                        if ("INVALID_CREDENTIALS".equals(errorMessage)) {
+                            Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Error en el inicio de sesión: " + errorMessage, Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
             }

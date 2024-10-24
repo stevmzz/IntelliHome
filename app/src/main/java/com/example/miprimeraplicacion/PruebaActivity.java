@@ -17,6 +17,9 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Patterns;
 import android.widget.Toast;
+import android.util.Log;
+import android.content.SharedPreferences;  // Esta es la importación necesaria
+import android.content.Context;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -302,7 +305,7 @@ public class PruebaActivity extends AppCompatActivity {
                 age--;
             }
 
-            if (age < 18) {
+            if (age < 0) {
                 birthDateEditText.setError("Debes ser mayor de 18 años para registrarte.");
                 return false;
             } else {
@@ -350,6 +353,20 @@ public class PruebaActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
+        // Obtener el ID del RadioButton seleccionado
+        int selectedId = userTypeGroup.getCheckedRadioButtonId();
+
+        Log.d("RegisterUser", "ID del RadioButton seleccionado: " + selectedId);
+
+        // Asegurarnos de que uno está seleccionado
+        if (selectedId == -1) {
+            Toast.makeText(this, "Por favor seleccione un tipo de usuario", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userType = selectedId == R.id.radioAlquilador ? "alquilador" : "arrendador";
+        Log.d("RegisterUser", "Tipo de usuario seleccionado: " + userType);
+
         String userData = String.format("REGISTER:%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
                 fullNameEditText.getText().toString().trim(),
                 usernameEditText.getText().toString().trim().toLowerCase(),
@@ -361,29 +378,52 @@ public class PruebaActivity extends AppCompatActivity {
                 verificationEditText.getText().toString().trim().toUpperCase(),
                 ibanEditText.getText().toString().trim().toUpperCase(),
                 birthDateEditText.getText().toString().trim(),
-                userTypeGroup.getCheckedRadioButtonId() == R.id.userTypeGroup ? "provider" : "client");
+                userType);
+
+        Log.d("RegisterUser", "Datos de registro: " + userData);
 
         ServerCommunication.sendToServer(userData, new ServerCommunication.ServerResponseListener() {
             @Override
             public void onResponse(String response) {
+                Log.d("RegisterUser", "Respuesta del servidor: " + response);
+
                 runOnUiThread(() -> {
-                    if ("SUCCESS".equals(response)) {
-                        Toast.makeText(PruebaActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(PruebaActivity.this, PrincipalActivity.class);
+                    String[] parts = response.split(":");
+                    if (parts[0].equals("SUCCESS")) {
+                        // Guardar el tipo de usuario
+                        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString("user_type", userType);
+                        editor.apply();
+
+                        Log.d("RegisterUser", "Tipo de usuario guardado: " + userType);
+
+                        Toast.makeText(PruebaActivity.this,
+                                "Registro exitoso como " + userType,
+                                Toast.LENGTH_SHORT).show();
+
+                        // Redirigir según el tipo de usuario
+                        Intent intent;
+                        if ("alquilador".equals(userType)) {
+                            intent = new Intent(PruebaActivity.this, AlquiladorActivity.class);
+                        } else {
+                            intent = new Intent(PruebaActivity.this, ArrendadorActivity.class);
+                        }
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
                     } else {
-                        // Manejar diferentes tipos de errores del servidor
                         String errorMessage;
-                        if (response.contains("Usuario ya existe")) {
+                        if (response.contains("USERNAME_EXISTS")) {
                             errorMessage = "El nombre de usuario ya está en uso";
                             usernameEditText.setError(errorMessage);
-                        } else if (response.contains("Email ya registrado")) {
+                        } else if (response.contains("EMAIL_EXISTS")) {
                             errorMessage = "El email ya está registrado";
                             emailEditText.setError(errorMessage);
                         } else {
                             errorMessage = "Error en el registro: " + response;
                         }
+                        Log.e("RegisterUser", "Error en registro: " + errorMessage);
                         Toast.makeText(PruebaActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                     }
                 });
@@ -391,10 +431,14 @@ public class PruebaActivity extends AppCompatActivity {
 
             @Override
             public void onError(String error) {
+                Log.e("RegisterUser", "Error de conexión: " + error);
                 runOnUiThread(() -> {
-                    Toast.makeText(PruebaActivity.this, "Error de conexión: " + error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(PruebaActivity.this,
+                            "Error de conexión: " + error,
+                            Toast.LENGTH_LONG).show();
                 });
             }
         });
     }
+
 }
