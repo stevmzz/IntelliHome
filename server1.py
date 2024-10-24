@@ -7,7 +7,7 @@ import sqlite3
 from tkinter import messagebox
 
 class ChatServer:
-    def __init__(self, host='192.168.100.6', port=1717):
+    def __init__(self, host='192.168.1.49', port=1717):
         # Inicializar la base de datos
         self.init_database()
         

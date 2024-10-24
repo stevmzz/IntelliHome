@@ -11,7 +11,7 @@ import java.net.SocketTimeoutException;
 
 public class ServerCommunication {
     private static final String TAG = "ServerCommunication";
-    private static final String SERVER_IP = "192.168.100.6";
+    private static final String SERVER_IP = "192.168.1.49";
     private static final int SERVER_PORT = 1717;
     private static final int SOCKET_TIMEOUT = 10000; // 10 segundos de timeout
 
