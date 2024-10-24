@@ -7,7 +7,7 @@ import sqlite3
 from tkinter import messagebox
 
 class ChatServer:
-    def __init__(self, host='192.168.100.6', port=1717):
+    def __init__(self, host='192.168.43.149', port=1717):
         # Inicializar la base de datos
         self.init_database()
         
@@ -40,6 +40,9 @@ class ChatServer:
         self.setup_logs_tab()
         self.setup_users_tab()
         self.setup_properties_tab()
+
+        self.refresh_users_table()  # Añadir esta línea
+        self.refresh_properties_table()  # Añadir esta línea
 
         # Iniciar el hilo de conexiones
         self.thread = threading.Thread(target=self.accept_connections)
@@ -359,6 +362,8 @@ class ChatServer:
                     self.handle_update_property(client_socket, message)
                 elif message.startswith("DELETE_PROPERTY:"):
                     self.handle_delete_property(client_socket, message)
+                elif message.startswith("GET_ALL_PROPERTIES"):
+                    self.handle_get_all_properties(client_socket, message)
                 
             except socket.timeout:
                 print("Timeout en la conexión con el cliente")
@@ -390,7 +395,7 @@ class ChatServer:
         except Exception as e:
             print(f"Error en login: {e}")
             client_socket.sendall(f"ERROR:{str(e)}\n".encode('utf-8'))
-
+    
     def handle_register(self, client_socket, message):
         try:
             user_data = message[9:].strip().split(',')
@@ -422,6 +427,9 @@ class ChatServer:
             """, user_data)
             
             self.conn.commit()
+            
+            # Actualizar la lista de usuarios en memoria
+            self.users = self.load_users_from_db()  # Añadir esta línea
             self.refresh_users_table()
             
             response = f"SUCCESS:{user_type}"
@@ -433,134 +441,137 @@ class ChatServer:
             print(f"Error en registro: {e}")
             client_socket.sendall(f"ERROR:{str(e)}\n".encode('utf-8'))
 
-    def handle_add_property(self, client_socket, message):
-        try:
-            # Format: ADD_PROPERTY:username,title,description,price,location,capacity,type,amenities,photos,rules
-            data = message[12:].split(',')
-            username = data[0].strip()
-            
-            # Obtener el ID del usuario
-            self.cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-            user_result = self.cursor.fetchone()
-            if not user_result:
-                client_socket.sendall("ERROR:USER_NOT_FOUND\n".encode('utf-8'))
-                return
-                
-            owner_id = user_result[0]
-            
-            # Insertar la propiedad
-            self.cursor.execute("""
-                INSERT INTO properties (
-                    owner_id, title, description, price_per_night,
-                    location, capacity, property_type, amenities, photos, rules
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                owner_id,
-                data[1].strip(),  # title
-                data[2].strip(),  # description
-                float(data[3]),   # price
-                data[4].strip(),  # location
-                int(data[5]),     # capacity
-                data[6].strip(),  # type
-                data[7].strip(),  # amenities
-                data[8].strip(),  # photos
-                data[9].strip()   # rules
-            ))
-            
-            self.conn.commit()
-            self.refresh_properties_table()
-            client_socket.sendall("SUCCESS:PROPERTY_ADDED\n".encode('utf-8'))
-            self.update_chat_display(f"Nueva propiedad añadida por {username}")
-            
-        except Exception as e:
-            error_msg = f"Error al añadir propiedad: {str(e)}"
-            print(error_msg)
-            client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+    def print_users_debug(self):
+        print("\n=== Debug de Usuarios ===")
+        print("Usuarios en memoria:", list(self.users.keys()))
+        self.cursor.execute("SELECT id, username FROM users")
+        db_users = self.cursor.fetchall()
+        print("Usuarios en base de datos:", [(uid, uname) for uid, uname in db_users])
+        print("=======================\n")
 
     def handle_get_properties(self, client_socket, message):
         try:
-            # Format: GET_PROPERTIES:username (optional)
-            parts = message.split(':')
-            username = parts[1].strip() if len(parts) > 1 and parts[1].strip() else None
-            
+            username = message.split(':')[1].strip()
+            print(f"Solicitando propiedades para usuario: '{username}'")
+                    
+            if not username:
+                print("Error: username vacío")
+                client_socket.sendall("ERROR:EMPTY_USERNAME\n".encode('utf-8'))
+                return
+                    
+            # Obtener todas las propiedades
             query = """
                 SELECT 
-                    p.id, u.username, p.title, p.description, p.price_per_night,
-                    p.location, p.capacity, p.property_type, p.amenities, 
-                    p.photos, p.rules, p.creation_date
+                    p.id, 
+                    u.username,  -- nombre del propietario
+                    p.title, 
+                    COALESCE(p.description, ''), 
+                    COALESCE(p.price_per_night, 0),
+                    COALESCE(p.location, ''), 
+                    COALESCE(p.capacity, 0), 
+                    COALESCE(p.property_type, ''),
+                    COALESCE(p.amenities, ''), 
+                    COALESCE(p.photos, ''), 
+                    COALESCE(p.rules, ''),
+                    COALESCE(p.creation_date, CURRENT_TIMESTAMP)
                 FROM properties p 
                 JOIN users u ON p.owner_id = u.id
+                ORDER BY p.creation_date DESC
             """
-            params = ()
             
-            if username:
-                query += " WHERE u.username = ?"
-                params = (username,)
-                
-            self.cursor.execute(query, params)
+            self.cursor.execute(query)
             properties = self.cursor.fetchall()
+            print(f"Propiedades encontradas: {len(properties)}")
             
-            # Formatear las propiedades como una cadena
+            if not properties:
+                client_socket.sendall("SUCCESS:\n".encode('utf-8'))
+                return
+            
             properties_data = []
             for prop in properties:
-                # Convertir todos los elementos a string y reemplazar comas por |
-                prop_str = "|".join(str(item) for item in prop)
+                # Asegurarse de que todos los campos estén presentes
+                prop_data = [
+                    str(prop[0]),      # id
+                    str(prop[1]),      # username (propietario)
+                    str(prop[2]),      # title
+                    str(prop[3]),      # description
+                    str(prop[4]),      # price_per_night
+                    str(prop[5]),      # location
+                    str(prop[6]),      # capacity
+                    str(prop[7]),      # property_type
+                    str(prop[8]),      # amenities
+                    str(prop[9]),      # photos
+                    str(prop[10]),     # rules
+                    str(prop[11])      # creation_date
+                ]
+                prop_str = "|".join(prop_data)
                 properties_data.append(prop_str)
                 
             response = "SUCCESS:" + ";".join(properties_data)
+            print(f"Enviando respuesta con {len(properties_data)} propiedades")
             client_socket.sendall(f"{response}\n".encode('utf-8'))
             
         except Exception as e:
             error_msg = f"Error al obtener propiedades: {str(e)}"
             print(error_msg)
+            self.update_chat_display(error_msg)
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
-    def handle_update_property(self, client_socket, message):
+    def handle_add_property(self, client_socket, message):
         try:
-            # Format: UPDATE_PROPERTY:property_id,username,title,description,price,location,capacity,type,amenities,photos,rules
-            data = message[15:].split(',')
-            property_id = int(data[0].strip())
-            username = data[1].strip()
-
-            # Verificar que el usuario sea el propietario
-            self.cursor.execute("""
-                SELECT p.id 
-                FROM properties p 
-                JOIN users u ON p.owner_id = u.id 
-                WHERE p.id = ? AND u.username = ?
-            """, (property_id, username))
-
-            if not self.cursor.fetchone():
-                client_socket.sendall("ERROR:UNAUTHORIZED\n".encode('utf-8'))
+            data = message[12:].split(',', maxsplit=9)
+            username = data[0].strip()
+            
+            self.cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+            user_result = self.cursor.fetchone()
+            
+            if not user_result:
+                error_msg = f"Usuario no encontrado: '{username}'"
+                print(error_msg)
+                client_socket.sendall("ERROR:USER_NOT_FOUND\n".encode('utf-8'))
                 return
-
-            # Actualizar la propiedad
-            self.cursor.execute("""
-                UPDATE properties 
-                SET title = ?, description = ?, price_per_night = ?,
-                    location = ?, capacity = ?, property_type = ?,
-                    amenities = ?, photos = ?, rules = ?
-                WHERE id = ?
-            """, (
-                data[2].strip(),    # title
-                data[3].strip(),    # description
-                float(data[4]),     # price
-                data[5].strip(),    # location
-                int(data[6]),       # capacity
-                data[7].strip(),    # type
-                data[8].strip(),    # amenities
-                data[9].strip(),    # photos
-                data[10].strip(),   # rules
-                property_id
-            ))
-
-            self.conn.commit()
-            self.refresh_properties_table()
-            client_socket.sendall("SUCCESS:PROPERTY_UPDATED\n".encode('utf-8'))
-            self.update_chat_display(f"Propiedad {property_id} actualizada por {username}")
-
+                        
+            owner_id = user_result[0]
+            
+            try:
+                # Parsear los datos
+                title = data[1].strip()
+                description = data[2].strip()
+                price = float(data[3]) if data[3].strip() else 0
+                location = data[4].strip()
+                capacity = int(data[5]) if data[5].strip() else 0
+                property_type = data[6].strip()
+                amenities = data[7].strip()  # Ya viene como string con formato |
+                photos = data[8].strip()     # Ya viene como string con formato |
+                rules = data[9].strip()      # Ya viene como string con formato |
+                
+                # Insertar la propiedad
+                self.cursor.execute("""
+                    INSERT INTO properties (
+                        owner_id, title, description, price_per_night,
+                        location, capacity, property_type, amenities, photos, rules
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    owner_id, title, description, price,
+                    location, capacity, property_type, amenities, photos, rules
+                ))
+                
+                self.conn.commit()
+                self.refresh_properties_table()
+                
+                success_msg = f"Propiedad añadida exitosamente para usuario: {username}"
+                print(success_msg)
+                self.update_chat_display(success_msg)
+                
+                client_socket.sendall("SUCCESS:PROPERTY_ADDED\n".encode('utf-8'))
+                
+            except Exception as e:
+                error_msg = f"Error al procesar datos: {str(e)}"
+                print(error_msg)
+                client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+                    
         except Exception as e:
-            error_msg = f"Error al actualizar propiedad: {str(e)}"
+            error_msg = f"Error al añadir propiedad: {str(e)}"
             print(error_msg)
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
@@ -645,6 +656,42 @@ class ChatServer:
         finally:
             self.root.quit()
             self.root.destroy()
+    
+    def handle_get_all_properties(self, client_socket, message):
+        try:
+            # Obtener todas las propiedades ordenadas por fecha de creación
+            query = """
+                SELECT 
+                    p.id, u.username, p.title, COALESCE(p.description, ''), COALESCE(p.price_per_night, 0),
+                    COALESCE(p.location, ''), COALESCE(p.capacity, 0), COALESCE(p.property_type, ''),
+                    COALESCE(p.amenities, ''), COALESCE(p.photos, ''), COALESCE(p.rules, ''),
+                    COALESCE(p.creation_date, CURRENT_TIMESTAMP)
+                FROM properties p 
+                JOIN users u ON p.owner_id = u.id
+                ORDER BY p.creation_date DESC
+            """
+            
+            self.cursor.execute(query)
+            properties = self.cursor.fetchall()
+            print(f"Total de propiedades encontradas: {len(properties)}")
+            
+            if not properties:
+                client_socket.sendall("SUCCESS:\n".encode('utf-8'))
+                return
+            
+            properties_data = []
+            for prop in properties:
+                prop_str = "|".join(str(item) if item is not None else "" for item in prop)
+                properties_data.append(prop_str)
+                
+            response = "SUCCESS:" + ";".join(properties_data)
+            client_socket.sendall(f"{response}\n".encode('utf-8'))
+            
+        except Exception as e:
+            error_msg = f"Error al obtener propiedades: {str(e)}"
+            print(error_msg)
+            self.update_chat_display(error_msg)
+            client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
 if __name__ == "__main__":
     try:

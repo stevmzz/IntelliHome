@@ -2,21 +2,23 @@ package com.example.miprimeraplicacion;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Property implements Serializable {
     private String id;
-    private String ownerId;
+    private String ownerName;
     private String title;
     private String description;
     private double pricePerNight;
     private String location;
     private int capacity;
-    private String propertyType; // RUSTICA, TECNOLOGICA, MODERNA, MANSION
+    private String propertyType;
     private List<String> photoUrls;
     private List<String> rules;
     private List<String> amenities;
     private String creationDate;
+    private String photos; // Para manejar la cadena base64
 
     public Property() {
         this.photoUrls = new ArrayList<>();
@@ -28,8 +30,8 @@ public class Property implements Serializable {
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public String getOwnerId() { return ownerId; }
-    public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -61,17 +63,62 @@ public class Property implements Serializable {
     public String getCreationDate() { return creationDate; }
     public void setCreationDate(String creationDate) { this.creationDate = creationDate; }
 
-    public void addPhotoUrl(String url) {
-        if (photoUrls.size() < 10) {
-            photoUrls.add(url);
+    // Nuevos métodos para manejar strings con formato separado por |
+    public String getPhotos() { return photos; }
+    public void setPhotos(String photos) {
+        this.photos = photos;
+        if (photos != null && !photos.isEmpty()) {
+            this.photoUrls = Arrays.asList(photos.split("\\|"));
         }
     }
 
-    public void addRule(String rule) {
-        rules.add(rule);
+    public String getAmenitiesString() {
+        if (amenities != null && !amenities.isEmpty()) {
+            return String.join("|", amenities);
+        }
+        return "";
     }
 
-    public void addAmenity(String amenity) {
-        amenities.add(amenity);
+    public void setAmenitiesFromString(String amenitiesStr) {
+        if (amenitiesStr != null && !amenitiesStr.isEmpty()) {
+            this.amenities = Arrays.asList(amenitiesStr.split("\\|"));
+        }
+    }
+
+    public String getRulesString() {
+        if (rules != null && !rules.isEmpty()) {
+            return String.join("|", rules);
+        }
+        return "";
+    }
+
+    public void setRulesFromString(String rulesStr) {
+        if (rulesStr != null && !rulesStr.isEmpty()) {
+            this.rules = Arrays.asList(rulesStr.split("\\|"));
+        }
+    }
+
+    // Métodos de utilidad
+    public boolean hasPhotos() {
+        return photoUrls != null && !photoUrls.isEmpty();
+    }
+
+    public boolean hasRules() {
+        return rules != null && !rules.isEmpty();
+    }
+
+    public boolean hasAmenities() {
+        return amenities != null && !amenities.isEmpty();
+    }
+
+    public String getFirstPhotoUrl() {
+        if (hasPhotos()) {
+            return photoUrls.get(0);
+        }
+        return null;
+    }
+
+    public int getPhotoCount() {
+        return photoUrls != null ? photoUrls.size() : 0;
     }
 }

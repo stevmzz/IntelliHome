@@ -82,6 +82,7 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("user_type", userType);
+        editor.putString("username", usernameEditText.getText().toString().trim().toLowerCase());  // Obtenemos el username del EditText
         editor.apply();
     }
 

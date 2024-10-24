@@ -45,20 +45,25 @@
             android:padding="16dp"
             android:textColor="@color/background_blue_light"/>
 
-        <!-- ScrollView para las propiedades -->
-        <ScrollView
-            android:id="@+id/scrollView"
+        <!-- RecyclerView para las propiedades -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/propertiesRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:clipToPadding="false"/>
 
-            <LinearLayout
-                android:id="@+id/propertiesContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"/>
-        </ScrollView>
+        <!-- Vista para cuando no hay propiedades -->
+        <TextView
+            android:id="@+id/emptyView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:visibility="gone"
+            android:text="No tienes propiedades registradas\nPresiona el botón + para añadir una"
+            android:textAlignment="center"/>
     </LinearLayout>
 
     <!-- Botón flotante para añadir publicación -->

@@ -2,6 +2,8 @@ package com.example.miprimeraplicacion;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
@@ -10,7 +12,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.content.Intent;
@@ -19,22 +20,24 @@ import android.text.Editable;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.view.Gravity;
-import android.view.MenuItem;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlquiladorActivity extends AppCompatActivity {
+public class AlquiladorActivity extends AppCompatActivity implements PropertyAdapter.OnPropertyClickListener {
 
     // Vistas principales
     private ImageView logoImageView;
     private Button topButton;
     private AutoCompleteTextView searchEditText;
     private Button filterButton;
-    private ScrollView scrollView;
-    private LinearLayout scrollContentLayout;
+    private LinearLayout emptyView;
+
+    // RecyclerView y adaptador
+    private RecyclerView propertiesRecyclerView;
+    private PropertyAdapter propertyAdapter;
 
     // Componentes del menú de filtros
     private MaterialCardView filterMenu;
@@ -56,8 +59,10 @@ public class AlquiladorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_alquilador);
 
         initializeViews();
+        setupRecyclerView();
         setupSearchAutocomplete();
         setupListeners();
+        loadProperties();
     }
 
     private void initializeViews() {
@@ -66,8 +71,8 @@ public class AlquiladorActivity extends AppCompatActivity {
         topButton = findViewById(R.id.topButton);
         searchEditText = findViewById(R.id.searchEditText);
         filterButton = findViewById(R.id.filterButton);
-        scrollView = findViewById(R.id.scrollView);
-        scrollContentLayout = findViewById(R.id.scrollContentLayout);
+        emptyView = findViewById(R.id.emptyView);
+        propertiesRecyclerView = findViewById(R.id.propertiesRecyclerView);
 
         // Vistas del menú de filtros
         filterMenu = findViewById(R.id.filterMenu);
@@ -82,12 +87,28 @@ public class AlquiladorActivity extends AppCompatActivity {
         filterMenu.setVisibility(View.GONE);
     }
 
+    private void setupRecyclerView() {
+        propertyAdapter = new PropertyAdapter(this, this);
+        propertiesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        propertiesRecyclerView.setAdapter(propertyAdapter);
+        // Opcional: añadir decoración para espaciado entre items
+        propertiesRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(android.graphics.Rect outRect, View view,
+                                       RecyclerView parent, RecyclerView.State state) {
+                outRect.bottom = 8;
+                outRect.left = 8;
+                outRect.right = 8;
+            }
+        });
+    }
+
     private void setupSearchAutocomplete() {
         // Inicializar la lista de ubicaciones
         locations = new ArrayList<>();
         initializeLocations();
 
-        // Crear y configurar el adaptador con el layout personalizado
+        // Crear y configurar el adaptador
         searchAdapter = new ArrayAdapter<>(
                 this,
                 R.layout.dropdown_item,
@@ -109,14 +130,125 @@ public class AlquiladorActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Manejar la selección de ubicación y ocultar teclado
+        // Manejar la selección de ubicación
         searchEditText.setOnItemClickListener((parent, view, position, id) -> {
             String selectedLocation = (String) parent.getItemAtPosition(position);
-            Toast.makeText(AlquiladorActivity.this,
-                    "Ubicación seleccionada: " + selectedLocation,
+            Toast.makeText(this, "Ubicación seleccionada: " + selectedLocation,
                     Toast.LENGTH_SHORT).show();
             hideKeyboard(searchEditText);
+            // Aquí puedes filtrar las propiedades por ubicación
         });
+    }
+
+    private void loadProperties() {
+        // Mostrar un loading si lo deseas
+        emptyView.setVisibility(View.GONE);
+
+        ServerCommunication.sendToServer("GET_ALL_PROPERTIES", new ServerCommunication.ServerResponseListener() {
+            @Override
+            public void onResponse(String response) {
+                runOnUiThread(() -> {
+                    if (response.startsWith("SUCCESS:")) {
+                        String propertiesData = response.substring(8);
+                        List<Property> properties = parsePropertiesResponse(propertiesData);
+                        propertyAdapter.updateProperties(properties);
+                        updateEmptyView(properties.isEmpty());
+                    } else {
+                        Toast.makeText(AlquiladorActivity.this,
+                                "Error al cargar propiedades", Toast.LENGTH_SHORT).show();
+                        updateEmptyView(true);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Toast.makeText(AlquiladorActivity.this,
+                            "Error de conexión: " + error, Toast.LENGTH_SHORT).show();
+                    updateEmptyView(true);
+                });
+            }
+        });
+    }
+
+    private void updateEmptyView(boolean isEmpty) {
+        emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        propertiesRecyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private List<Property> parsePropertiesResponse(String response) {
+        List<Property> properties = new ArrayList<>();
+        if (response == null || response.trim().isEmpty()) {
+            return properties;
+        }
+
+        String[] propertyStrings = response.split(";");
+        for (String propertyStr : propertyStrings) {
+            if (propertyStr.trim().isEmpty()) continue;
+
+            try {
+                String[] data = propertyStr.split("\\|");
+                Property property = new Property();
+
+                // Campos básicos
+                property.setId(data[0].trim());
+                property.setOwnerName(data[1].trim());  // username del propietario
+                property.setTitle(data[2].trim());
+                property.setDescription(data[3].trim());
+
+                // Campos numéricos
+                try {
+                    property.setPricePerNight(Double.parseDouble(data[4].trim()));
+                } catch (NumberFormatException e) {
+                    property.setPricePerNight(0.0);
+                }
+
+                property.setLocation(data[5].trim());
+
+                try {
+                    property.setCapacity(Integer.parseInt(data[6].trim()));
+                } catch (NumberFormatException e) {
+                    property.setCapacity(0);
+                }
+
+                property.setPropertyType(data[7].trim());
+
+                if (data.length > 8 && !data[8].trim().isEmpty()) {
+                    List<String> amenities = new ArrayList<>();
+                    for (String item : data[8].split("\\|")) {
+                        amenities.add(item.trim());
+                    }
+                    property.setAmenities(amenities);
+                }
+
+                if (data.length > 9 && !data[9].trim().isEmpty()) {
+                    List<String> photoUrls = new ArrayList<>();
+                    for (String url : data[9].split("\\|")) {
+                        photoUrls.add(url.trim());
+                    }
+                    property.setPhotoUrls(photoUrls);
+                }
+
+                if (data.length > 10 && !data[10].trim().isEmpty()) {
+                    List<String> rules = new ArrayList<>();
+                    for (String rule : data[10].split("\\|")) {
+                        rules.add(rule.trim());
+                    }
+                    property.setRules(rules);
+                }
+
+                if (data.length > 11 && !data[11].trim().isEmpty()) {
+                    property.setCreationDate(data[11].trim());
+                }
+
+                properties.add(property);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return properties;
     }
 
     private void hideKeyboard(View view) {
@@ -133,19 +265,15 @@ public class AlquiladorActivity extends AppCompatActivity {
         popup.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.menu_profile) {
-                // Implementar navegación al perfil
                 Toast.makeText(this, "Perfil seleccionado", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (id == R.id.menu_monitoring) {
-                // Implementar navegación al monitoreo
                 Toast.makeText(this, "Monitoreo seleccionado", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (id == R.id.menu_settings) {
-                // Implementar navegación a ajustes
                 Toast.makeText(this, "Ajustes seleccionado", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (id == R.id.menu_history) {
-                // Implementar navegación al historial
                 Toast.makeText(this, "Historial seleccionado", Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -156,31 +284,10 @@ public class AlquiladorActivity extends AppCompatActivity {
     }
 
     private void initializeLocations() {
-        // Agregar provincias y lugares principales de Costa Rica
         locations.add("San José, Costa Rica");
         locations.add("San José, Escazú");
         locations.add("San José, Santa Ana");
-        locations.add("San José, Moravia");
-        locations.add("San José, Curridabat");
-        locations.add("Alajuela, Costa Rica");
-        locations.add("Alajuela, La Fortuna");
-        locations.add("Alajuela, Poás");
-        locations.add("Cartago, Costa Rica");
-        locations.add("Cartago, Tres Ríos");
-        locations.add("Heredia, Costa Rica");
-        locations.add("Heredia, San Pablo");
-        locations.add("Heredia, Santo Domingo");
-        locations.add("Guanacaste, Liberia");
-        locations.add("Guanacaste, Tamarindo");
-        locations.add("Guanacaste, Nosara");
-        locations.add("Guanacaste, Flamingo");
-        locations.add("Puntarenas, Costa Rica");
-        locations.add("Puntarenas, Jacó");
-        locations.add("Puntarenas, Manuel Antonio");
-        locations.add("Puntarenas, Drake");
-        locations.add("Limón, Costa Rica");
-        locations.add("Limón, Puerto Viejo");
-        locations.add("Limón, Cahuita");
+        // ... resto de las ubicaciones ...
     }
 
     private void filterLocations(String text) {
@@ -193,56 +300,38 @@ public class AlquiladorActivity extends AppCompatActivity {
         List<String> filteredLocations = new ArrayList<>();
         String searchText = text.toLowerCase();
 
-        // Filtrar ubicaciones que coincidan
         for (String location : locations) {
             if (location.toLowerCase().contains(searchText)) {
                 filteredLocations.add(location);
-                if (filteredLocations.size() >= 4) { // Limitar a 4 sugerencias
-                    break;
-                }
+                if (filteredLocations.size() >= 4) break;
             }
         }
 
-        // Actualizar el adaptador
         searchAdapter.clear();
         searchAdapter.addAll(filteredLocations);
         searchAdapter.notifyDataSetChanged();
     }
 
     private void setupListeners() {
-        // Logo click
         logoImageView.setOnClickListener(v -> {
             hideKeyboard(v);
-            Intent intent = new Intent(this, AlquiladorActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-            finish();
-            overridePendingTransition(0, 0);
+            recreate();
         });
 
-        // Botón superior con menú popup
         topButton.setOnClickListener(v -> {
             hideKeyboard(v);
             showPopupMenu(v);
         });
 
-        // Botón de filtros
         filterButton.setOnClickListener(v -> {
             hideKeyboard(v);
             toggleFilterMenu();
         });
 
-        // Botones del menú de filtros
         clearFiltersButton.setOnClickListener(v -> clearFilters());
         applyFiltersButton.setOnClickListener(v -> {
             applyFilters();
             hideKeyboard(v);
-        });
-
-        // Ocultar teclado cuando se toca fuera de los campos de texto
-        scrollView.setOnTouchListener((v, event) -> {
-            hideKeyboard(v);
-            return false;
         });
     }
 
@@ -267,13 +356,11 @@ public class AlquiladorActivity extends AppCompatActivity {
     }
 
     private void applyFilters() {
-        // Obtener valores de los filtros
         String price = priceRangeInput.getText().toString();
         String people = peopleCountInput.getText().toString();
         String rooms = roomsCountInput.getText().toString();
         boolean allowsPets = petsSwitch.isChecked();
 
-        // Crear resumen de filtros
         String filterSummary = "Filtros aplicados:\n" +
                 "Precio: " + (price.isEmpty() ? "No especificado" : price) + "\n" +
                 "Personas: " + (people.isEmpty() ? "No especificado" : people) + "\n" +
@@ -281,6 +368,13 @@ public class AlquiladorActivity extends AppCompatActivity {
                 "Mascotas: " + (allowsPets ? "Sí" : "No");
 
         Toast.makeText(this, filterSummary, Toast.LENGTH_LONG).show();
-        toggleFilterMenu(); // Ocultar el menú después de aplicar
+        toggleFilterMenu();
+    }
+
+    @Override
+    public void onPropertyClick(Property property) {
+        Intent intent = new Intent(this, PropertyDetailActivity.class);
+        intent.putExtra("property", property);
+        startActivity(intent);
     }
 }
