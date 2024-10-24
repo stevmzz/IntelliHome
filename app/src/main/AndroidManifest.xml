@@ -36,7 +36,10 @@
             android:name=".PruebaActivity"
             android:exported="true">
         </activity>
-
+        <activity
+            android:name=".monitoreo_acti"
+            android:exported="true">
+        </activity>
         <activity
             android:name=".AlquiladorActivity"
             android:exported="true">

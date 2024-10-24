@@ -181,6 +181,8 @@ public class AlquiladorActivity extends AppCompatActivity {
         locations.add("Limón, Costa Rica");
         locations.add("Limón, Puerto Viejo");
         locations.add("Limón, Cahuita");
+        locations.add("Limón, Pueblo Nuevo");
+        locations.add("Limón, Cieneguita");
     }
 
     private void filterLocations(String text) {

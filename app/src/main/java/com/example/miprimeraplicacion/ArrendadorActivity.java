@@ -33,31 +33,7 @@ public class ArrendadorActivity extends AppCompatActivity {
         setupListeners();
     }
 
-    private void initializeViews() {
-        logoImageView = findViewById(R.id.logoImageView);
-        topButton = findViewById(R.id.topButton);
-        propertiesContainer = findViewById(R.id.propertiesContainer);
-        addPropertyButton = findViewById(R.id.addPropertyButton);
-    }
 
-    private void setupListeners() {
-        // Logo click
-        logoImageView.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ArrendadorActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-            finish();
-            overridePendingTransition(0, 0);
-        });
-
-        // Botón de menú
-        topButton.setOnClickListener(v -> showPopupMenu(v));
-
-        addPropertyButton.setOnClickListener(v -> {
-            Intent intent = new Intent(ArrendadorActivity.this, AddPropertyActivity.class);
-            startActivityForResult(intent, ADD_PROPERTY_REQUEST);
-        });
-    }
 
     private void showPopupMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view, Gravity.END);
@@ -82,6 +58,55 @@ public class ArrendadorActivity extends AppCompatActivity {
         });
 
         popup.show();
+    }
+    // Agregar al inicio
+    private LinearLayout menuOptionsLayout;
+    private Button menuProfileButton;
+    private Button menuSettingsButton;
+    private Button menuMonitoringButton;
+    private Button menuHistoryButton;
+
+    private void initializeViews() {
+        logoImageView = findViewById(R.id.logoImageView);
+        topButton = findViewById(R.id.topButton);
+        propertiesContainer = findViewById(R.id.propertiesContainer);
+        addPropertyButton = findViewById(R.id.addPropertyButton);
+
+        // Inicializar las opciones del menú
+        menuOptionsLayout = findViewById(R.id.menuOptionsLayout);
+        menuProfileButton = findViewById(R.id.menu_profile);
+        menuSettingsButton = findViewById(R.id.menu_settings);
+        menuMonitoringButton = findViewById(R.id.menu_monitoring);
+        menuHistoryButton = findViewById(R.id.menu_history);
+    }
+
+    private void setupListeners() {
+        // Logo click
+        logoImageView.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ArrendadorActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+            finish();
+            overridePendingTransition(0, 0);
+        });
+
+        // Botón de menú
+        topButton.setOnClickListener(v -> {
+            // Mostrar u ocultar el menú de opciones
+            if (menuOptionsLayout.getVisibility() == View.GONE) {
+                menuOptionsLayout.setVisibility(View.VISIBLE);
+            } else {
+                menuOptionsLayout.setVisibility(View.GONE);
+            }
+        });
+
+        // Opción de Monitoreo
+        menuMonitoringButton.setOnClickListener(v -> {
+            Intent intent = new Intent(ArrendadorActivity.this, monitoreo_acti.class);
+            startActivity(intent);
+        });
+
+        // Otros oyentes para las demás opciones si es necesario
     }
 
 }

@@ -10,6 +10,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
         <!-- Barra superior con logo y menú -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,6 +35,39 @@
                 android:text="Menú"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>
+        <LinearLayout
+            android:id="@+id/menuOptionsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="8dp">
+
+            <Button
+                android:id="@+id/menu_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Perfil"/>
+
+            <Button
+                android:id="@+id/menu_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ajustes"/>
+
+            <Button
+                android:id="@+id/menu_monitoring"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Monitoreo"/>
+
+            <Button
+                android:id="@+id/menu_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Historial"/>
+        </LinearLayout>
+
 
         <!-- Título de la sección -->
         <TextView
