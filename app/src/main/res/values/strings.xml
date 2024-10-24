@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">IntelliHome</string>
+
+    <string-array name="user_types">
+        <item>Alquilador</item>
+        <item>Arrendador</item>
+    </string-array>
+</resources>

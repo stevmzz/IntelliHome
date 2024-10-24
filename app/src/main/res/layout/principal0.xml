@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#e0f7fa"
+    android:padding="16dp">
+
+    <!-- Imagen principal (Logo) -->
+<ImageView
+android:id="@+id/logoImage"
+android:layout_width="150dp"
+android:layout_height="150dp"
+android:layout_centerHorizontal="true"
+android:layout_marginBottom="32dp"
+android:src="@drawable/logo" />
+
+    <!-- Botón Register -->
+<Button
+android:id="@+id/buttonRegister"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_below="@id/logoImage"
+android:layout_marginTop="16dp"
+android:backgroundTint="#81d4fa"
+    android:text="Register"
+    android:textColor="#ffffff"
+    android:textStyle="bold" />
+
+    <!-- Botón Login -->
+<Button
+android:id="@+id/buttonLogin"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_below="@id/buttonRegister"
+android:layout_marginTop="16dp"
+android:backgroundTint="#81d4fa"
+    android:text="Login"
+    android:textColor="#ffffff"
+    android:textStyle="bold" />
+
+    <!-- Botón con imagen 1 -->
+<ImageButton
+android:id="@+id/buttonImage1"
+android:layout_width="match_parent"
+android:layout_height="40dp"
+android:layout_below="@id/buttonLogin"
+android:layout_marginTop="16dp"
+android:src="@drawable/google"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:scaleType="centerInside" />
+
+    <!-- Botón con imagen 2 -->
+<ImageButton
+android:id="@+id/buttonImage2"
+android:layout_width="match_parent"
+android:layout_height="40dp"
+android:layout_below="@id/buttonImage1"
+android:layout_marginTop="16dp"
+android:src="@drawable/facebook"
+android:background="?attr/selectableItemBackgroundBorderless"
+android:scaleType="centerInside" />
+</RelativeLayout>

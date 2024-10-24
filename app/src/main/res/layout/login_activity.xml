@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#e0f7fa"
+    android:padding="16dp">
+
+
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="153dp"
+        android:contentDescription="Logo"
+        android:gravity="center_horizontal"
+        android:src="@drawable/logo" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/edittext_background"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/logo" />
+
+        <EditText
+            android:id="@+id/username"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Username"
+            android:paddingStart="8dp"
+            android:textColor="#000"
+            android:textColorHint="#999" />
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/edittext_background"
+        android:orientation="horizontal"
+        android:padding="8dp">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/logo" />
+
+        <EditText
+            android:id="@+id/password2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:paddingStart="8dp"
+            android:textColor="#000"
+            android:textColorHint="#999" />
+        <ImageButton
+            android:id="@+id/showHidePasswordButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ojo_contra"
+            />
+
+    </LinearLayout>
+
+    <!-- Botón "Forgot Password?" -->
+    <Button
+        android:id="@+id/buttonContinue2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#80deea"
+        android:text="Continue"
+        android:textColor="#ffffff"
+        android:textStyle="bold" />
+    <Button
+        android:id="@+id/buttonForgotPassword2"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#e0f7fa"
+        android:text="forgot password?"
+        android:textColor="#ffffff"
+        android:textStyle="bold" />
+    </LinearLayout>
