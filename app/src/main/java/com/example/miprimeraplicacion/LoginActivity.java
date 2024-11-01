@@ -10,19 +10,20 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.button.MaterialButton;
 
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
-    private EditText usernameEditText;
-    private EditText passwordEditText;
-    private ImageButton showHidePasswordButton;
-    private Button loginButton;
-    private Button forgotPasswordButton;
+    private TextInputEditText usernameEditText;
+    private TextInputEditText passwordEditText;
+    private TextInputLayout passwordLayout;
+    private MaterialButton loginButton;
+    private MaterialButton forgotPasswordButton;
     private boolean isPasswordVisible = false;
 
     @Override
@@ -37,13 +38,16 @@ public class LoginActivity extends AppCompatActivity {
     private void initializeViews() {
         usernameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password2);
-        showHidePasswordButton = findViewById(R.id.showHidePasswordButton);
+        passwordLayout = findViewById(R.id.passwordLayout);
         loginButton = findViewById(R.id.buttonContinue2);
         forgotPasswordButton = findViewById(R.id.buttonForgotPassword2);
+
+        // Configurar el icono de mostrar/ocultar contraseña
+        passwordLayout.setEndIconOnClickListener(v -> togglePasswordVisibility());
     }
 
     private void setupListeners() {
-        // Añadir TextWatcher para convertir usuario a minúsculas mientras escribe
+        // Convertir usuario a minúsculas mientras escribe
         usernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -61,18 +65,31 @@ public class LoginActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        showHidePasswordButton.setOnClickListener(v -> togglePasswordVisibility());
         loginButton.setOnClickListener(v -> handleLogin());
         forgotPasswordButton.setOnClickListener(v -> handleForgotPassword());
+
+        // Validación en tiempo real
+        passwordEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                passwordLayout.setError(null); // Limpiar error al escribir
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void togglePasswordVisibility() {
         if (isPasswordVisible) {
             passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            showHidePasswordButton.setImageResource(R.drawable.ojo_contra);
+            passwordLayout.setEndIconDrawable(R.drawable.ojo_contra);
         } else {
             passwordEditText.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-            showHidePasswordButton.setImageResource(R.drawable.ojo_contra2);
+            passwordLayout.setEndIconDrawable(R.drawable.ojo_contra2);
         }
         isPasswordVisible = !isPasswordVisible;
         passwordEditText.setSelection(passwordEditText.length());
@@ -82,6 +99,7 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("user_type", userType);
+        editor.putString("username", usernameEditText.getText().toString().trim().toLowerCase());
         editor.apply();
     }
 
@@ -95,15 +113,23 @@ public class LoginActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
-        // Asegurar que el usuario esté en minúsculas
+        // Validación de campos
         String username = usernameEditText.getText().toString().trim().toLowerCase();
         String password = passwordEditText.getText().toString().trim();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Por favor, ingrese usuario y contraseña", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Campos de usuario o contraseña vacíos");
+        if (username.isEmpty()) {
+            ((TextInputLayout) usernameEditText.getParent().getParent()).setError("Ingrese un usuario");
             return;
         }
+
+        if (password.isEmpty()) {
+            passwordLayout.setError("Ingrese una contraseña");
+            return;
+        }
+
+        // Mostrar progreso
+        loginButton.setEnabled(false);
+        loginButton.setText("Iniciando sesión...");
 
         String loginData = String.format("LOGIN:%s,%s", username, password);
         Log.d(TAG, "Enviando datos de login al servidor: " + loginData);
@@ -113,6 +139,9 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 Log.d(TAG, "Respuesta del servidor recibida: " + response);
                 runOnUiThread(() -> {
+                    loginButton.setEnabled(true);
+                    loginButton.setText("Continue");
+
                     String[] parts = response.split(":");
                     if (parts[0].equals("SUCCESS")) {
                         String userType = parts.length > 1 ? parts[1].trim() : "";
@@ -120,15 +149,12 @@ public class LoginActivity extends AppCompatActivity {
 
                         if (userType.isEmpty()) {
                             Log.e(TAG, "Error: Tipo de usuario vacío en la respuesta");
-                            Toast.makeText(LoginActivity.this, "Error: No se pudo determinar el tipo de usuario", Toast.LENGTH_LONG).show();
+                            passwordLayout.setError("Error: No se pudo determinar el tipo de usuario");
                             return;
                         }
 
-                        // Guardar el tipo de usuario
                         saveUserType(userType);
                         Log.d(TAG, "Tipo de usuario guardado en SharedPreferences: " + userType);
-
-                        Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso como " + userType, Toast.LENGTH_SHORT).show();
 
                         // Redirigir según el tipo de usuario
                         Intent intent;
@@ -138,7 +164,7 @@ public class LoginActivity extends AppCompatActivity {
                             intent = new Intent(LoginActivity.this, ArrendadorActivity.class);
                         } else {
                             Log.e(TAG, "Tipo de usuario no reconocido: " + userType);
-                            Toast.makeText(LoginActivity.this, "Error: Tipo de usuario no válido", Toast.LENGTH_LONG).show();
+                            passwordLayout.setError("Error: Tipo de usuario no válido");
                             return;
                         }
 
@@ -149,9 +175,9 @@ public class LoginActivity extends AppCompatActivity {
                         String errorMessage = parts.length > 1 ? parts[1] : "Error desconocido";
                         Log.d(TAG, "Login fallido: " + errorMessage);
                         if ("INVALID_CREDENTIALS".equals(errorMessage)) {
-                            Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show();
+                            passwordLayout.setError("Usuario o contraseña incorrectos");
                         } else {
-                            Toast.makeText(LoginActivity.this, "Error en el inicio de sesión: " + errorMessage, Toast.LENGTH_LONG).show();
+                            passwordLayout.setError("Error en el inicio de sesión: " + errorMessage);
                         }
                     }
                 });
@@ -161,14 +187,16 @@ public class LoginActivity extends AppCompatActivity {
             public void onError(String error) {
                 Log.e(TAG, "Error en la comunicación con el servidor: " + error);
                 runOnUiThread(() -> {
-                    Toast.makeText(LoginActivity.this, "Error de conexión: " + error, Toast.LENGTH_LONG).show();
+                    loginButton.setEnabled(true);
+                    loginButton.setText("Continue");
+                    passwordLayout.setError("Error de conexión: " + error);
                 });
             }
         });
     }
 
     private void handleForgotPassword() {
-        Toast.makeText(this, "Funcionalidad de recuperación de contraseña no implementada", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "Intento de recuperación de contraseña (no implementado)");
+        Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+        startActivity(intent);
     }
 }

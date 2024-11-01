@@ -32,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
         // Referencia a los EditText y ImageButton
         EditText passwordEditText = findViewById(R.id.password);
         EditText confirmPasswordEditText = findViewById(R.id.confirmPassword);
-        ImageButton showHidePasswordButton = findViewById(R.id.showHidePasswordButton);
-        ImageButton showHideConfirmPasswordButton = findViewById(R.id.showHideConfirmPasswordButton);
+        ImageButton showHidePasswordButton = findViewById(R.id.password);
+        ImageButton showHideConfirmPasswordButton = findViewById(R.id.password2);
         Button buttonContinue = findViewById(R.id.buttonContinue);
 
         // Configuración del botón continuar para abrir otra actividad

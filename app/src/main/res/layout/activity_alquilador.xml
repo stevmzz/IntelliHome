@@ -11,6 +11,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Barra superior con logo y menú -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -34,39 +35,8 @@
                 android:text="Menú"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuOptionsLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:padding="8dp"
-            android:background="@color/white">
 
-            <Button
-                android:id="@+id/menu_profile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Perfil"/>
-
-            <Button
-                android:id="@+id/menu_settings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Ajustes"/>
-
-            <Button
-                android:id="@+id/menu_monitoring"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Monitoreo"/>
-
-            <Button
-                android:id="@+id/menu_history"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Historial"/>
-        </LinearLayout>
+        <!-- Barra de búsqueda y filtros -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -91,9 +61,9 @@
                         android:id="@+id/searchEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:completionThreshold="1"
                         android:hint="Buscar ubicación"
-                        android:inputType="text" />
+                        android:inputType="text"
+                        android:completionThreshold="1"/>
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -106,18 +76,56 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <ScrollView
-            android:id="@+id/scrollView"
+        <!-- Contenedor para RecyclerView y EmptyView -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
-            <LinearLayout
-                android:id="@+id/scrollContentLayout"
+            <!-- RecyclerView para las propiedades -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/propertiesRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:clipToPadding="false"
+                android:scrollbars="vertical"/>
+
+            <!-- Vista vacía -->
+            <LinearLayout
+                android:id="@+id/emptyView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="16dp"/>
-        </ScrollView>
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:src="@drawable/ic_empty_house"
+                    android:alpha="0.5"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No hay propiedades disponibles"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="16dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Intenta con otros filtros de búsqueda"
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp"
+                    android:alpha="0.7"/>
+            </LinearLayout>
+
+        </FrameLayout>
+
     </LinearLayout>
 
     <!-- Menú de Filtros (inicialmente oculto) -->
@@ -214,4 +222,5 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
 </FrameLayout>

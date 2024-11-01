@@ -6,7 +6,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class monitoreo_acti extends AppCompatActivity {
+public class MonitoreoActivity extends AppCompatActivity {
 
     // Array para almacenar el estado actual de cada botón (true: bombo_on, false: bombo_off)
     private boolean[] buttonStates = new boolean[8];
@@ -15,7 +15,7 @@ public class monitoreo_acti extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.monitoreo);
+        setContentView(R.layout.activity_monitoreo);
 
         // Inicializa los estados de los botones a false (bombo_off)
         for (int i = 0; i < buttonStates.length; i++) {
