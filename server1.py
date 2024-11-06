@@ -10,7 +10,7 @@ import time
 import serial
 
 class ChatServer:
-    def __init__(self, host='192.168.100.6', port=1717):
+    def __init__(self, host='192.168.46.157', port=1717):
     
         # Inicializar la base de datos
         self.init_database()
@@ -46,7 +46,7 @@ class ChatServer:
         self.setup_properties_tab()
 
         try:
-            self.arduino = serial.Serial('COM5', 9600, timeout=1)
+            self.arduino = serial.Serial('COM3', 9600, timeout=1)
             time.sleep(2)
             self._update_chat_display("Conexión con Arduino establecida")
         except Exception as e:
@@ -75,6 +75,19 @@ class ChatServer:
             self.conn = sqlite3.connect('intellihome.db', check_same_thread=False)
             self.cursor = self.conn.cursor()
             
+            # Primero verificar si la columna fingerprint_registered existe
+            self.cursor.execute("PRAGMA table_info(users)")
+            columns = [col[1] for col in self.cursor.fetchall()]
+            
+            # Si la columna no existe, agregarla
+            if 'fingerprint_registered' not in columns:
+                self.cursor.execute('''
+                    ALTER TABLE users
+                    ADD COLUMN fingerprint_registered BOOLEAN DEFAULT 0
+                ''')
+                self.conn.commit()
+                print("Columna fingerprint_registered agregada exitosamente")
+            
             # Tabla de usuarios
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (
@@ -94,7 +107,7 @@ class ChatServer:
                 )
             ''')
 
-            # Tabla de propiedades
+            # Resto de las tablas...
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS properties (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -124,6 +137,8 @@ class ChatServer:
             );""")
             
             self.conn.commit()
+            print("Base de datos inicializada correctamente")
+            
         except Exception as e:
             print(f"Error inicializando la base de datos: {e}")
             messagebox.showerror("Error", f"Error en la base de datos: {e}")
@@ -494,6 +509,8 @@ class ChatServer:
                     self.handle_login(client_socket, message)
                 elif message.startswith("LED_ON:") or message.startswith("LED_OFF:"):
                     self.handle_led_command(client_socket, message)
+                elif message.startswith("DOOR_OPEN:") or message.startswith("DOOR_CLOSE:"):
+                    self.handle_door_command(client_socket, message)
                 elif message.startswith("REGISTER:"):
                     self.handle_register(client_socket, message)
                 elif message.startswith("ADD_PROPERTY:"):
@@ -543,7 +560,9 @@ class ChatServer:
             user_data = message[9:].strip().split(',')
             username = user_data[1].strip()
             user_type = user_data[10].strip()
-            print(f"Intento de registro - Usuario: {username}, Tipo: {user_type}")
+            fingerprint_registered = user_data[11].strip() if len(user_data) > 11 else "0"  # Convertir a booleano
+            
+            print(f"Intento de registro - Usuario: {username}, Tipo: {user_type}, Huella: {fingerprint_registered}")
 
             # Verificar si el usuario ya existe
             self.cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
@@ -564,14 +583,28 @@ class ChatServer:
             self.cursor.execute("""
                 INSERT INTO users (
                     full_name, username, email, password, description,
-                    hobbies, phone, verification, iban, birth_date, user_type
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, user_data)
+                    hobbies, phone, verification, iban, birth_date, user_type,
+                    fingerprint_registered
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                user_data[0].strip(),     # full_name
+                username,                  # username
+                email,                    # email
+                user_data[3].strip(),     # password
+                user_data[4].strip(),     # description
+                user_data[5].strip(),     # hobbies
+                user_data[6].strip(),     # phone
+                user_data[7].strip(),     # verification
+                user_data[8].strip(),     # iban
+                user_data[9].strip(),     # birth_date
+                user_type,                # user_type
+                fingerprint_registered    # fingerprint_registered
+            ))
             
             self.conn.commit()
             
             # Actualizar la lista de usuarios en memoria
-            self.users = self.load_users_from_db()  # Añadir esta línea
+            self.users = self.load_users_from_db()
             self.refresh_users_table()
             
             response = f"SUCCESS:{user_type}"
@@ -1125,7 +1158,34 @@ class ChatServer:
             print(error_msg)
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
-    
+    def handle_door_command(self, client_socket, message):
+        try:
+            if not self.arduino:
+                raise Exception("Arduino no conectado")
+            
+            print(f"Enviando comando al Arduino: {message}")
+            self.arduino.write(f"{message}\n".encode())
+            
+            # Esperar respuesta
+            response = self.arduino.readline().decode().strip()
+            print(f"Respuesta del Arduino: {response}")
+            
+            # Si no hay respuesta, enviar éxito de todos modos
+            if not response:
+                response = "SUCCESS:" + message
+                
+            client_socket.sendall(f"{response}\n".encode('utf-8'))
+            
+            # Actualizar UI
+            command_parts = message.split(":")
+            action = "abierta" if "DOOR_OPEN" in message else "cerrada"
+            door_name = command_parts[1] if len(command_parts) > 1 else "desconocida"
+            self.update_chat_display(f"Puerta {door_name} {action}")
+                
+        except Exception as e:
+            error_msg = f"Error en comando de puerta: {str(e)}"
+            print(error_msg)
+            client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
 if __name__ == "__main__":
     try:

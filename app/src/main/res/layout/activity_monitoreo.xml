@@ -64,7 +64,7 @@
                         android:scaleType="fitCenter"
                         android:src="@drawable/casita" />
 
-                    <!-- 8 buttons with exact IDs matching the Java code -->
+                    <!-- Luces -->
                     <ImageButton
                         android:id="@+id/button1"
                         android:layout_width="40dp"
@@ -145,6 +145,67 @@
                         android:background="@null"
                         android:scaleType="fitCenter"
                         android:src="@drawable/bombo_off" />
+
+                    <!-- Puertas -->
+                    <ImageButton
+                        android:id="@+id/doorGarage"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="270dp"
+                        android:layout_marginTop="80dp"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/door_closed" />
+
+                    <ImageButton
+                        android:id="@+id/doorMain"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="157dp"
+                        android:layout_marginTop="120dp"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/door_closed" />
+
+                    <ImageButton
+                        android:id="@+id/doorKitchen"
+                        android:layout_width="40dp"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="50dp"
+                        android:layout_marginTop="65dp"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/door_closed" />
+
+                    <ImageButton
+                        android:id="@+id/doorLiving"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="170dp"
+                        android:layout_marginTop="40dp"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/door_closed" />
+
+                    <ImageButton
+                        android:id="@+id/doorBedroom1"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="120dp"
+                        android:layout_marginTop="200dp"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/door_closed" />
+
+                    <ImageButton
+                        android:id="@+id/doorBedroom2"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="120dp"
+                        android:layout_marginTop="160dp"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/door_closed" />
 
                 </FrameLayout>
             </androidx.cardview.widget.CardView>

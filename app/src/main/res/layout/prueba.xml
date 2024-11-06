@@ -184,6 +184,59 @@
                     android:hint="Confirm Password"
                     android:inputType="textPassword"/>
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Después de la sección de Contact Information y antes de Additional Information -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Biometric Authentication"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/fingerprintIcon"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:src="@drawable/ic_fingerprint"
+                        android:layout_marginBottom="16dp"
+                        app:tint="@color/primary_blue"/>
+
+                    <TextView
+                        android:id="@+id/fingerprintStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fingerprint not registered"
+                        android:textColor="@color/error"
+                        android:layout_marginBottom="16dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonRegisterFingerprint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Register Fingerprint"
+                        app:icon="@drawable/ic_fingerprint"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Profile Photo Section -->
             <TextView
                 android:layout_width="wrap_content"
