@@ -21,4 +21,5 @@
     <color name="chip_stroke_color">#CCCCCC</color>
     <color name="gray">#808080</color>
     <color name="colorPrimary">#1976D2</color>
+    <color name="success">#4CAF50</color>
 </resources>

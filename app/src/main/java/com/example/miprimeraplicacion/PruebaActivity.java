@@ -36,6 +36,9 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import android.widget.ImageView;  // Para ImageView
 import android.content.Context;   // Para Context
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import android.widget.TextView;  // Faltaba este import
 
 public class PruebaActivity extends AppCompatActivity {
 
@@ -54,6 +57,12 @@ public class PruebaActivity extends AppCompatActivity {
     private MaterialCheckBox termsCheckbox;
     private MaterialRadioButton radioArrendador, radioAlquilador;
     private ImageView imageViewPhoto;
+
+    private static final int FINGERPRINT_PERMISSION_CODE = 3;
+    private boolean isFingerPrintRegistered = false;
+    private ImageView fingerprintIcon;
+    private TextView fingerprintStatus;
+    private MaterialButton buttonRegisterFingerprint;
 
     // Estados
     private boolean isPasswordVisible = false;
@@ -104,6 +113,10 @@ public class PruebaActivity extends AppCompatActivity {
         termsCheckbox = findViewById(R.id.termsCheckbox);
         radioArrendador = findViewById(R.id.radioArrendador);
         radioAlquilador = findViewById(R.id.radioAlquilador);
+
+        fingerprintIcon = findViewById(R.id.fingerprintIcon);
+        fingerprintStatus = findViewById(R.id.fingerprintStatus);
+        buttonRegisterFingerprint = findViewById(R.id.buttonRegisterFingerprint);
     }
 
     private void setupListeners() {
@@ -120,6 +133,10 @@ public class PruebaActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {}
         };
+
+        buttonRegisterFingerprint.setOnClickListener(v -> {
+            checkBiometricSupport();
+        });
 
         // Aplicar TextWatcher a todos los campos
         fullNameEditText.addTextChangedListener(textWatcher);
@@ -226,6 +243,66 @@ public class PruebaActivity extends AppCompatActivity {
         });
     }
 
+    private void checkBiometricSupport() {
+        BiometricManager biometricManager = BiometricManager.from(this);
+        switch (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
+            case BiometricManager.BIOMETRIC_SUCCESS:
+                showBiometricPrompt();
+                break;
+            case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
+                Toast.makeText(this, "Device doesn't support fingerprint", Toast.LENGTH_LONG).show();
+                break;
+            case BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE:
+                Toast.makeText(this, "Biometric hardware unavailable", Toast.LENGTH_LONG).show();
+                break;
+            case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
+                Toast.makeText(this, "No fingerprint enrolled", Toast.LENGTH_LONG).show();
+                break;
+        }
+    }
+
+    private void showBiometricPrompt() {
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Register Fingerprint")
+                .setSubtitle("Place your finger on the sensor")
+                .setNegativeButtonText("Cancel")
+                .build();
+
+        BiometricPrompt biometricPrompt = new BiometricPrompt(this,
+                ContextCompat.getMainExecutor(this),
+                new BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                        super.onAuthenticationSucceeded(result);
+                        runOnUiThread(() -> {
+                            isFingerPrintRegistered = true;
+                            fingerprintStatus.setText("Fingerprint registered");
+                            fingerprintStatus.setTextColor(getResources().getColor(R.color.success));
+                            buttonRegisterFingerprint.setEnabled(false);
+                            buttonRegisterFingerprint.setText("Fingerprint Registered");
+                            checkFieldsForEmptyValues();  // Asegurarse de que esto se llama
+                            Toast.makeText(PruebaActivity.this,
+                                    "Fingerprint registered successfully",
+                                    Toast.LENGTH_SHORT).show();  // Agregar feedback
+                        });
+                    }
+
+                    @Override
+                    public void onAuthenticationError(int errorCode, CharSequence errString) {
+                        super.onAuthenticationError(errorCode, errString);
+                        Toast.makeText(PruebaActivity.this, errString, Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onAuthenticationFailed() {
+                        super.onAuthenticationFailed();
+                        Toast.makeText(PruebaActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        biometricPrompt.authenticate(promptInfo);
+    }
+
     private void checkFieldsForEmptyValues() {
         boolean shouldEnableContinue = areAllFieldsFilled() && termsCheckbox.isChecked();
         buttonContinue.setEnabled(shouldEnableContinue);
@@ -243,7 +320,8 @@ public class PruebaActivity extends AppCompatActivity {
                 !verificationEditText.getText().toString().trim().isEmpty() &&
                 !ibanEditText.getText().toString().trim().isEmpty() &&
                 !birthDateEditText.getText().toString().trim().isEmpty() &&
-                (radioArrendador.isChecked() || radioAlquilador.isChecked());
+                (radioArrendador.isChecked() || radioAlquilador.isChecked()) &&  // Agregar && aquí
+                isFingerPrintRegistered;
     }
 
     private void togglePasswordVisibility(TextInputEditText editText, TextInputLayout layout) {
@@ -267,6 +345,11 @@ public class PruebaActivity extends AppCompatActivity {
         String fullName = fullNameEditText.getText().toString().trim();
         if (fullName.length() < 3) {
             fullNameEditText.setError("Name must be at least 3 characters long");
+            isValid = false;
+        }
+
+        if (!isFingerPrintRegistered) {
+            Toast.makeText(this, "You must register your fingerprint", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 
@@ -542,7 +625,7 @@ public class PruebaActivity extends AppCompatActivity {
         String userType = radioAlquilador.isChecked() ? "alquilador" : "arrendador";
         Log.d(TAG, "Selected user type: " + userType);
 
-        String userData = String.format("REGISTER:%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+        String userData = String.format("REGISTER:%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%b",  // Agregar %b para el booleano
                 fullNameEditText.getText().toString().trim(),
                 usernameEditText.getText().toString().trim().toLowerCase(),
                 emailEditText.getText().toString().trim(),
@@ -553,7 +636,8 @@ public class PruebaActivity extends AppCompatActivity {
                 verificationEditText.getText().toString().trim().toUpperCase(),
                 ibanEditText.getText().toString().trim().toUpperCase(),
                 birthDateEditText.getText().toString().trim(),
-                userType);
+                userType,
+                isFingerPrintRegistered);
 
         Log.d(TAG, "Sending registration data to server");
 
@@ -595,6 +679,7 @@ public class PruebaActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("user_type", userType);
         editor.putString("username", usernameEditText.getText().toString().trim().toLowerCase());
+        editor.putBoolean("fingerprint_registered", isFingerPrintRegistered);
         editor.apply();
 
         Log.d(TAG, "User preferences saved");
