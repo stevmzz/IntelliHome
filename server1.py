@@ -10,7 +10,7 @@ import time
 import serial
 
 class ChatServer:
-    def __init__(self, host='192.168.46.157', port=1717):
+    def __init__(self, host='192.168.100.45', port=1717):
     
         # Inicializar la base de datos
         self.init_database()
@@ -47,8 +47,26 @@ class ChatServer:
 
         try:
             self.arduino = serial.Serial('COM3', 9600, timeout=1)
-            time.sleep(2)
+            time.sleep(2)  # Esperar a que Arduino se reinicie
             self._update_chat_display("Conexión con Arduino establecida")
+            
+            # Solicitar una lectura inicial del sensor
+            self.arduino.write("READ_DHT:\n".encode())
+            time.sleep(0.1)  # Pequeña pausa para asegurar respuesta
+            response = self.arduino.readline().decode().strip()
+            
+            if "DHT_DATA:" in response:
+                self._update_chat_display("Sensor DHT11 detectado y funcionando")
+                # Extraer y mostrar los datos
+                try:
+                    data_str = response.split("DHT_DATA:")[1]
+                    data = eval(data_str)  # Convertir el string JSON a diccionario
+                    self._update_chat_display(f"Lectura inicial - Temperatura: {data['temperatura']}°C, Humedad: {data['humedad']}%")
+                except Exception as e:
+                    self._update_chat_display(f"Error procesando datos del sensor: {e}")
+            else:
+                self._update_chat_display("No se detectó el sensor DHT11 o lectura fallida")
+                
         except Exception as e:
             self._update_chat_display(f"Error conectando con Arduino: {e}")
             self.arduino = None
@@ -511,6 +529,8 @@ class ChatServer:
                     self.handle_led_command(client_socket, message)
                 elif message.startswith("DOOR_OPEN:") or message.startswith("DOOR_CLOSE:"):
                     self.handle_door_command(client_socket, message)
+                elif message.startswith("READ_DHT"):  # Nuevo comando
+                    self.handle_dht_reading(client_socket)
                 elif message.startswith("REGISTER:"):
                     self.handle_register(client_socket, message)
                 elif message.startswith("ADD_PROPERTY:"):
@@ -1184,6 +1204,37 @@ class ChatServer:
                 
         except Exception as e:
             error_msg = f"Error en comando de puerta: {str(e)}"
+            print(error_msg)
+            client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+
+    def handle_dht_reading(self, client_socket):
+        try:
+            if not self.arduino:
+                raise Exception("Arduino no conectado")
+            
+            self.arduino.write("READ_DHT:\n".encode())
+            time.sleep(0.1)  # Pequeña pausa para asegurar respuesta
+            
+            response = self.arduino.readline().decode().strip()
+            
+            if "DHT_DATA:" in response:
+                # Extraer los datos del formato JSON
+                data_str = response.split("DHT_DATA:")[1]
+                data = eval(data_str)  # Convertir el string JSON a diccionario
+                
+                # Formatear respuesta para el cliente
+                client_response = f"SUCCESS:{data['temperatura']},{data['humedad']}"
+                client_socket.sendall(f"{client_response}\n".encode('utf-8'))
+                
+                # Actualizar la UI del servidor
+                self._update_chat_display(
+                    f"Lectura DHT11 - Temperatura: {data['temperatura']}°C, Humedad: {data['humedad']}%"
+                )
+            else:
+                raise Exception("Error leyendo datos del sensor")
+                
+        except Exception as e:
+            error_msg = f"Error leyendo sensor DHT11: {str(e)}"
             print(error_msg)
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 

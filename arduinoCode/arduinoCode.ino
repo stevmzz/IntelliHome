@@ -1,18 +1,32 @@
 #include <Servo.h>
+#include <DHT.h>
 
+// Configuración del sensor DHT11
+#define DHTPIN 2     // Pin digital para el sensor DHT11
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+// Configuración de LEDs y puertas
 const int NUM_LEDS = 8;
 const int NUM_DOORS = 6;
 const int ledPins[NUM_LEDS] = {4, 5, 6, 7, 8, 9, 10, 11};
-const int servoPins[NUM_DOORS] = {2, 3, 12, 13, A0, A1};  // Pines para los servomotores
+const int servoPins[NUM_DOORS] = {A2, A5, A3, A4, A0, A1};  // Pines para los servomotores
 
 Servo doorServos[NUM_DOORS];  // Array de objetos Servo
 
 // Posiciones para los servos
 const int CLOSED_POSITION = 0;    // Posición cerrada
-const int OPEN_POSITION = 90;     // Posición abierta (90 grados)
+const int OPEN_POSITION = 120;    // Posición abierta
+
+// Variables para el sensor DHT11
+unsigned long lastDHTRead = 0;
+const long DHT_INTERVAL = 2000; // Intervalo de lectura del DHT11 (2 segundos)
 
 void setup() {
   Serial.begin(9600);
+  
+  // Inicializar sensor DHT11
+  dht.begin();
   
   // Configurar LEDs
   for(int i = 0; i < NUM_LEDS; i++) {
@@ -28,6 +42,7 @@ void setup() {
 }
 
 void loop() {
+  // Manejar comandos seriales
   if (Serial.available()) {
     String command = Serial.readStringUntil('\n');
     command.trim();
@@ -45,8 +60,18 @@ void loop() {
       else if(cmd == "DOOR_OPEN" || cmd == "DOOR_CLOSE") {
         handleDoorCommand(cmd, param);
       }
+      // Manejar comando de lectura DHT11
+      else if(cmd == "READ_DHT") {
+        readAndSendDHTData();
+      }
     }
     Serial.flush();
+  }
+
+  // Lectura periódica del sensor DHT11 (cada 2 segundos)
+  if (millis() - lastDHTRead >= DHT_INTERVAL) {
+    readAndSendDHTData();
+    lastDHTRead = millis();
   }
 }
 
@@ -86,4 +111,22 @@ int getDoorIndex(String doorName) {
   if(doorName == "BEDROOM1") return 4;
   if(doorName == "BEDROOM2") return 5;
   return -1;
+}
+
+void readAndSendDHTData() {
+  float humedad = dht.readHumidity();
+  float temperatura = dht.readTemperature();
+
+  if (isnan(humedad) || isnan(temperatura)) {
+    Serial.println("ERROR:DHT_READ_FAILED");
+    return;
+  }
+
+  // Enviar datos en formato JSON para facilitar el parsing
+  Serial.print("DHT_DATA:");
+  Serial.print("{\"temperatura\":");
+  Serial.print(temperatura);
+  Serial.print(",\"humedad\":");
+  Serial.print(humedad);
+  Serial.println("}");
 }

@@ -1,15 +1,18 @@
 package com.example.miprimeraplicacion;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 import android.content.SharedPreferences;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class MonitoreoActivity extends AppCompatActivity {
 
@@ -41,6 +44,11 @@ public class MonitoreoActivity extends AppCompatActivity {
             doorStates[i] = false;
         }
 
+        Button humedadButton = findViewById(R.id.humedad);
+        humedadButton.setOnClickListener(v -> {
+            requestDHTData();
+        });
+
         // Configurar los botones de luces
         setupButtonToggle(R.id.button1, 0);
         setupButtonToggle(R.id.button2, 1);
@@ -61,6 +69,64 @@ public class MonitoreoActivity extends AppCompatActivity {
 
         exitButton = findViewById(R.id.exitButton);
         exitButton.setOnClickListener(v -> finish());
+    }
+
+    private void requestDHTData() {
+        // Mostrar diálogo de carga
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Obteniendo datos del sensor...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        // Enviar comando al servidor
+        ServerCommunication.sendToServer("READ_DHT", new ServerCommunication.ServerResponseListener() {
+            @Override
+            public void onResponse(String response) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    if (response.startsWith("SUCCESS:")) {
+                        String[] data = response.substring(8).split(",");
+                        if (data.length == 2) {
+                            float temperatura = Float.parseFloat(data[0]);
+                            float humedad = Float.parseFloat(data[1]);
+                            showDHTDataDialog(temperatura, humedad);
+                        } else {
+                            showError("Formato de datos inválido");
+                        }
+                    } else {
+                        showError("Error al obtener datos del sensor");
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    showError("Error: " + error);
+                });
+            }
+        });
+    }
+
+    private void showDHTDataDialog(float temperatura, float humedad) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
+
+        // Inflar el layout personalizado
+        View view = getLayoutInflater().inflate(R.layout.dialog_dht_data, null);
+
+        // Configurar los TextView del layout
+        TextView tempTextView = view.findViewById(R.id.temperatureValue);
+        TextView humTextView = view.findViewById(R.id.humidityValue);
+
+        // Formatear los valores con un decimal
+        tempTextView.setText(String.format("%.1f°C", temperatura));
+        humTextView.setText(String.format("%.1f%%", humedad));
+
+        builder.setView(view)
+                .setTitle("Datos Ambientales")
+                .setPositiveButton("Cerrar", null)
+                .show();
     }
 
     private void setupButtonToggle(int buttonId, final int index) {
