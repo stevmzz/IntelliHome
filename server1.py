@@ -47,29 +47,50 @@ class ChatServer:
 
         try:
             self.arduino = serial.Serial('COM3', 9600, timeout=1)
-            time.sleep(2)  # Esperar a que Arduino se reinicie
-            self._update_chat_display("Conexión con Arduino establecida")
+            time.sleep(2)  # Esperar inicialización de Arduino
+            self.arduino_lock = threading.Lock()
             
-            # Solicitar una lectura inicial del sensor
-            self.arduino.write("READ_DHT:\n".encode())
-            time.sleep(0.1)  # Pequeña pausa para asegurar respuesta
-            response = self.arduino.readline().decode().strip()
+            # Primera lectura con múltiples intentos
+            self._update_chat_display("Inicializando conexión con Arduino...")
+            max_attempts = 3
+            dht_success = False
             
-            if "DHT_DATA:" in response:
-                self._update_chat_display("Sensor DHT11 detectado y funcionando")
-                # Extraer y mostrar los datos
+            for attempt in range(max_attempts):
                 try:
-                    data_str = response.split("DHT_DATA:")[1]
-                    data = eval(data_str)  # Convertir el string JSON a diccionario
-                    self._update_chat_display(f"Lectura inicial - Temperatura: {data['temperatura']}°C, Humedad: {data['humedad']}%")
+                    # Limpiar buffers antes de cada intento
+                    self.arduino.reset_input_buffer()
+                    self.arduino.reset_output_buffer()
+                    
+                    # Intentar leer el sensor
+                    response = self.handle_arduino_command("READ_DHT")
+                    if "DHT_DATA" in response:
+                        data = eval(response.split("DHT_DATA:")[1])
+                        self._update_chat_display(
+                            f"Sensor DHT11 conectado - Temperatura: {data['temperatura']}°C, Humedad: {data['humedad']}%"
+                        )
+                        dht_success = True
+                        break
+                    else:
+                        if attempt < max_attempts - 1:
+                            self._update_chat_display(f"Reintentando lectura del sensor ({attempt + 1}/{max_attempts})...")
+                            time.sleep(2)  # Esperar entre intentos
                 except Exception as e:
-                    self._update_chat_display(f"Error procesando datos del sensor: {e}")
-            else:
-                self._update_chat_display("No se detectó el sensor DHT11 o lectura fallida")
-                
+                    if attempt < max_attempts - 1:
+                        self._update_chat_display(f"Error en intento {attempt + 1}: {str(e)}")
+                        time.sleep(2)
+                    else:
+                        raise e
+
+            if not dht_success:
+                self._update_chat_display("Advertencia: No se pudo inicializar el sensor DHT11")
+            
+            # Confirmar que la conexión básica con Arduino está funcionando
+            self._update_chat_display("Arduino conectado y funcionando")
+            
         except Exception as e:
             self._update_chat_display(f"Error conectando con Arduino: {e}")
             self.arduino = None
+            self.arduino_lock = None
 
         self.refresh_users_table()  # Añadir esta línea
         self.refresh_properties_table()  # Añadir esta línea
@@ -1152,26 +1173,15 @@ class ChatServer:
 
     def handle_led_command(self, client_socket, message):
         try:
-            if not self.arduino:
-                raise Exception("Arduino no conectado")
-            
-            print(f"Enviando comando al Arduino: {message}")
-            self.arduino.write(f"{message}\n".encode())
-            
-            # Esperar respuesta
-            response = self.arduino.readline().decode().strip()
-            print(f"Respuesta del Arduino: {response}")
-            
-            # Si no hay respuesta, enviar éxito de todos modos
-            if not response:
-                response = "SUCCESS:" + message
-                
-            client_socket.sendall(f"{response}\n".encode('utf-8'))
-            
-            # Actualizar UI
-            status = "encendido" if "LED_ON" in message else "apagado"
-            led_index = message.split(":")[1]
-            self.update_chat_display(f"LED {led_index} {status}")
+            response = self.handle_arduino_command(message)
+            if response.startswith("SUCCESS"):
+                client_socket.sendall(f"{response}\n".encode('utf-8'))
+                # Actualizar UI
+                led_index = message.split(":")[1]
+                status = "encendido" if "LED_ON" in message else "apagado"
+                self._update_chat_display(f"LED {led_index} {status}")
+            else:
+                raise Exception(response)
                 
         except Exception as e:
             error_msg = f"Error en comando LED: {str(e)}"
@@ -1180,62 +1190,118 @@ class ChatServer:
 
     def handle_door_command(self, client_socket, message):
         try:
-            if not self.arduino:
-                raise Exception("Arduino no conectado")
-            
-            print(f"Enviando comando al Arduino: {message}")
-            self.arduino.write(f"{message}\n".encode())
-            
-            # Esperar respuesta
-            response = self.arduino.readline().decode().strip()
-            print(f"Respuesta del Arduino: {response}")
-            
-            # Si no hay respuesta, enviar éxito de todos modos
-            if not response:
-                response = "SUCCESS:" + message
-                
-            client_socket.sendall(f"{response}\n".encode('utf-8'))
-            
-            # Actualizar UI
-            command_parts = message.split(":")
-            action = "abierta" if "DOOR_OPEN" in message else "cerrada"
-            door_name = command_parts[1] if len(command_parts) > 1 else "desconocida"
-            self.update_chat_display(f"Puerta {door_name} {action}")
+            response = self.handle_arduino_command(message)
+            if response.startswith("SUCCESS"):
+                client_socket.sendall(f"{response}\n".encode('utf-8'))
+                # Actualizar UI
+                command_parts = message.split(":")
+                action = "abierta" if "DOOR_OPEN" in message else "cerrada"
+                door_name = command_parts[1] if len(command_parts) > 1 else "desconocida"
+                self._update_chat_display(f"Puerta {door_name} {action}")
+            else:
+                raise Exception(response)
                 
         except Exception as e:
             error_msg = f"Error en comando de puerta: {str(e)}"
             print(error_msg)
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
-    def handle_dht_reading(self, client_socket):
+    def handle_arduino_command(self, command):
+        """Maneja la comunicación con Arduino con timeouts específicos para cada comando"""
+        if not self.arduino:
+            return "ERROR:Arduino no conectado"
+            
         try:
-            if not self.arduino:
-                raise Exception("Arduino no conectado")
-            
-            self.arduino.write("READ_DHT:\n".encode())
-            time.sleep(0.1)  # Pequeña pausa para asegurar respuesta
-            
-            response = self.arduino.readline().decode().strip()
-            
-            if "DHT_DATA:" in response:
-                # Extraer los datos del formato JSON
-                data_str = response.split("DHT_DATA:")[1]
-                data = eval(data_str)  # Convertir el string JSON a diccionario
+            with self.arduino_lock:
+                # Limpiar buffers antes de enviar
+                self.arduino.reset_input_buffer()
+                self.arduino.reset_output_buffer()
                 
-                # Formatear respuesta para el cliente
-                client_response = f"SUCCESS:{data['temperatura']},{data['humedad']}"
-                client_socket.sendall(f"{client_response}\n".encode('utf-8'))
+                # Enviar comando
+                self._update_chat_display(f"Enviando comando a Arduino: {command}")
+                self.arduino.write(f"{command}\n".encode())
+                self.arduino.flush()
                 
-                # Actualizar la UI del servidor
-                self._update_chat_display(
-                    f"Lectura DHT11 - Temperatura: {data['temperatura']}°C, Humedad: {data['humedad']}%"
-                )
-            else:
-                raise Exception("Error leyendo datos del sensor")
+                # Ajustar timeout según el comando
+                if command.startswith("READ_DHT"):
+                    timeout = 2.0  # Timeout más largo para lecturas DHT
+                    sleep_interval = 0.2  # Intervalos más largos para DHT
+                else:
+                    timeout = 1.0  # Timeout normal para otros comandos
+                    sleep_interval = 0.1
+                
+                # Esperar respuesta
+                start_time = time.time()
+                response = ""
+                
+                while time.time() - start_time < timeout:
+                    if self.arduino.in_waiting:
+                        try:
+                            line = self.arduino.readline().decode().strip()
+                            if line:
+                                response = line
+                                break
+                        except UnicodeDecodeError:
+                            continue  # Ignorar errores de decodificación y seguir leyendo
+                    time.sleep(sleep_interval)
+                
+                if not response:
+                    if command.startswith("READ_DHT"):
+                        return "ERROR:DHT_TIMEOUT"
+                    return "ERROR:No response from Arduino"
+                    
+                self._update_chat_display(f"Respuesta de Arduino: {response}")
+                return response
+                    
+        except Exception as e:
+            error_msg = f"Error en comunicación con Arduino: {str(e)}"
+            self._update_chat_display(error_msg)
+            return f"ERROR:{str(e)}"
+
+    def handle_dht_reading(self, client_socket):
+        """Manejo mejorado de lectura del sensor DHT11"""
+        try:
+            for attempt in range(3):
+                response = self.handle_arduino_command("READ_DHT")
+                
+                if "DHT_DATA" in response:
+                    try:
+                        data_str = response.split("DHT_DATA:")[1]
+                        data = eval(data_str)
+                        temp = float(data['temperatura'])
+                        hum = float(data['humedad'])
+                        
+                        if 0 <= temp <= 50 and 0 <= hum <= 100:
+                            client_response = f"SUCCESS:{temp},{hum}"
+                            client_socket.sendall(f"{client_response}\n".encode('utf-8'))
+                            self._update_chat_display(
+                                f"Lectura DHT11 - Temperatura: {temp}°C, Humedad: {hum}%"
+                            )
+                            return
+                    except Exception as e:
+                        if attempt == 2:
+                            raise Exception(f"Error procesando datos: {str(e)}")
+                elif "DHT_TIMEOUT" in response:
+                    if attempt < 2:
+                        self._update_chat_display(f"Timeout en intento {attempt + 1}, reintentando...")
+                        time.sleep(1)
+                        continue
+                    else:
+                        raise Exception("Sensor no responde después de varios intentos")
+                else:
+                    if attempt < 2:
+                        self._update_chat_display(f"Error en intento {attempt + 1}, reintentando...")
+                        time.sleep(1)
+                        continue
+                    else:
+                        raise Exception(f"Error en lectura: {response}")
+                        
+            raise Exception("No se pudieron obtener lecturas válidas después de 3 intentos")
                 
         except Exception as e:
             error_msg = f"Error leyendo sensor DHT11: {str(e)}"
             print(error_msg)
+            self._update_chat_display(error_msg)
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
 if __name__ == "__main__":

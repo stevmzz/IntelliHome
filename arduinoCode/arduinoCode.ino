@@ -24,10 +24,10 @@ const long DHT_INTERVAL = 2000; // Intervalo de lectura del DHT11 (2 segundos)
 
 void setup() {
   Serial.begin(9600);
-  
+
   // Inicializar sensor DHT11
   dht.begin();
-  
+
   // Configurar LEDs
   for(int i = 0; i < NUM_LEDS; i++) {
     pinMode(ledPins[i], OUTPUT);
@@ -46,12 +46,12 @@ void loop() {
   if (Serial.available()) {
     String command = Serial.readStringUntil('\n');
     command.trim();
-    
+
     int separatorIndex = command.indexOf(':');
     if(separatorIndex != -1) {
       String cmd = command.substring(0, separatorIndex);
       String param = command.substring(separatorIndex + 1);
-      
+
       // Manejar comandos LED
       if(cmd == "LED_ON" || cmd == "LED_OFF") {
         handleLEDCommand(cmd, param.toInt());
@@ -90,7 +90,7 @@ void handleLEDCommand(String cmd, int ledIndex) {
 
 void handleDoorCommand(String cmd, String doorName) {
   int doorIndex = getDoorIndex(doorName);
-  
+
   if(doorIndex >= 0 && doorIndex < NUM_DOORS) {
     if(cmd == "DOOR_OPEN") {
       doorServos[doorIndex].write(OPEN_POSITION);
