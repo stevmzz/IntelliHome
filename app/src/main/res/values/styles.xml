@@ -77,4 +77,10 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="AlertDialog.Fire" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/error</item>
+        <item name="colorSurface">@color/gray</item>
+        <item name="alertDialogStyle">@style/MaterialAlertDialog_Rounded</item>
+    </style>
+
 </resources>

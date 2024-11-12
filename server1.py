@@ -8,6 +8,9 @@ from tkinter import messagebox
 from twilio.rest import Client
 import time
 import serial
+import websockets
+import json
+import asyncio
 
 class ChatServer:
     def __init__(self, host='192.168.100.45', port=1717):
@@ -21,6 +24,13 @@ class ChatServer:
         self.server_socket.listen(5)
         self.clients = []
         self.users = self.load_users_from_db()
+
+        # Añadir soporte WebSocket - MOVER AQUÍ
+        self.websocket_clients = set()
+        self.websocket_server = None
+        
+        # Iniciar servidor WebSocket
+        self.start_websocket_server()
 
         # Configuración de la interfaz gráfica
         self.root = tk.Tk()
@@ -86,6 +96,10 @@ class ChatServer:
             
             # Confirmar que la conexión básica con Arduino está funcionando
             self._update_chat_display("Arduino conectado y funcionando")
+
+            self.fire_thread = threading.Thread(target=self.monitor_fire)
+            self.fire_thread.daemon = True
+            self.fire_thread.start()
             
         except Exception as e:
             self._update_chat_display(f"Error conectando con Arduino: {e}")
@@ -475,15 +489,8 @@ class ChatServer:
     def update_chat_display(self, message):
         self.root.after(0, self._update_chat_display, message)
 
-    def _update_chat_display(self, message):
+    def _update_chat_display(self, message, tag='info'):
         self.chat_display.config(state='normal')
-        
-        tag = 'info'
-        if "exitoso" in message.lower() or "success" in message.lower():
-            tag = 'success'
-        elif "error" in message.lower() or "fallido" in message.lower():
-            tag = 'error'
-            
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.chat_display.insert(tk.END, f"[{timestamp}] ", 'info')
         self.chat_display.insert(tk.END, f"{message}\n", tag)
@@ -550,8 +557,10 @@ class ChatServer:
                     self.handle_led_command(client_socket, message)
                 elif message.startswith("DOOR_OPEN:") or message.startswith("DOOR_CLOSE:"):
                     self.handle_door_command(client_socket, message)
-                elif message.startswith("READ_DHT"):  # Nuevo comando
+                elif message.startswith("READ_DHT"):
                     self.handle_dht_reading(client_socket)
+                elif message.startswith("CHECK_FIRE"):
+                    self.handle_fire_reading(client_socket)
                 elif message.startswith("REGISTER:"):
                     self.handle_register(client_socket, message)
                 elif message.startswith("ADD_PROPERTY:"):
@@ -858,6 +867,18 @@ class ChatServer:
 
     def close_server(self):
         try:
+            # Cerrar conexiones websocket
+            if hasattr(self, 'websocket_clients'):
+                for client in list(self.websocket_clients):
+                    try:
+                        asyncio.run(client.close())
+                    except:
+                        pass
+                self.websocket_clients.clear()
+            
+            if self.websocket_server:
+                self.websocket_server.close()
+            
             # Cerrar conexiones de clientes
             for client in self.clients:
                 try:
@@ -1217,17 +1238,16 @@ class ChatServer:
                 self.arduino.reset_input_buffer()
                 self.arduino.reset_output_buffer()
                 
-                # Enviar comando
-                self._update_chat_display(f"Enviando comando a Arduino: {command}")
+                # Enviar comando silenciosamente
                 self.arduino.write(f"{command}\n".encode())
                 self.arduino.flush()
                 
                 # Ajustar timeout según el comando
                 if command.startswith("READ_DHT"):
-                    timeout = 2.0  # Timeout más largo para lecturas DHT
-                    sleep_interval = 0.2  # Intervalos más largos para DHT
+                    timeout = 2.0
+                    sleep_interval = 0.2
                 else:
-                    timeout = 1.0  # Timeout normal para otros comandos
+                    timeout = 1.0
                     sleep_interval = 0.1
                 
                 # Esperar respuesta
@@ -1239,10 +1259,15 @@ class ChatServer:
                         try:
                             line = self.arduino.readline().decode().strip()
                             if line:
-                                response = line
-                                break
+                                # Si el mensaje corresponde al comando que enviamos, guardarlo
+                                if (command.startswith("READ_DHT") and "DHT_DATA" in line) or \
+                                (command.startswith("LED") and "SUCCESS" in line) or \
+                                (command.startswith("DOOR") and "SUCCESS" in line) or \
+                                (command.startswith("CHECK_FIRE") and ("ALERTA" in line or "INFO" in line)):
+                                    response = line
+                                    break
                         except UnicodeDecodeError:
-                            continue  # Ignorar errores de decodificación y seguir leyendo
+                            continue
                     time.sleep(sleep_interval)
                 
                 if not response:
@@ -1250,12 +1275,9 @@ class ChatServer:
                         return "ERROR:DHT_TIMEOUT"
                     return "ERROR:No response from Arduino"
                     
-                self._update_chat_display(f"Respuesta de Arduino: {response}")
                 return response
                     
         except Exception as e:
-            error_msg = f"Error en comunicación con Arduino: {str(e)}"
-            self._update_chat_display(error_msg)
             return f"ERROR:{str(e)}"
 
     def handle_dht_reading(self, client_socket):
@@ -1303,6 +1325,211 @@ class ChatServer:
             print(error_msg)
             self._update_chat_display(error_msg)
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+
+    def handle_fire_reading(self, client_socket):
+        """Manejo de lectura del sensor de fuego"""
+        try:
+            response = self.handle_arduino_command("CHECK_FIRE")
+            
+            if "ALERTA: Llama detectada!" in response:
+                client_socket.sendall("SUCCESS:FIRE_DETECTED\n".encode('utf-8'))
+            elif "INFO: Llama apagada" in response:
+                client_socket.sendall("SUCCESS:NO_FIRE\n".encode('utf-8'))
+            else:
+                client_socket.sendall("ERROR:Invalid response\n".encode('utf-8'))
+
+        except Exception as e:
+            error_msg = f"Error leyendo sensor de fuego: {str(e)}"
+            print(error_msg)
+            client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+
+    def send_fire_notification(self, phone_number):
+        """Envía notificación de WhatsApp cuando se detecta fuego"""
+        try:
+            account_sid = 'AC5bad82a1e303ec57e6872ddde2473257'
+            auth_token = '9e4726664431826bfaa0c62258282548'
+            client = Client(account_sid, auth_token)
+
+            # Formatear el número de teléfono
+            formatted_phone = f"whatsapp:+506{phone_number.strip('+')}"
+            
+            # Obtener fecha y hora actual formateada
+            current_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+            # Mensaje de alerta
+            message_body = (
+                "🚨 *¡ALERTA DE FUEGO! - IntelliHome*\n\n"
+                "Se ha detectado fuego en su propiedad\n\n"
+                f"⏰ *Fecha y hora:* {current_time}\n\n"
+                "🔴 *ACCIONES REQUERIDAS:*\n"
+                "1. Evacuar el área inmediatamente\n"
+                "2. Llamar a los bomberos (9-1-1)\n"
+                "3. No intente combatir el fuego usted mismo\n\n"
+                "Este es un mensaje automático del sistema de seguridad."
+            )
+
+            message = client.messages.create(
+                body=message_body,
+                from_='whatsapp:+14155238886',
+                to=formatted_phone
+            )
+
+            print(f"Notificación de fuego enviada exitosamente: {message.sid}")
+            print(f"Enviado a: {formatted_phone}")
+            return True
+
+        except Exception as e:
+            print(f"Error enviando notificación de fuego: {str(e)}")
+            return False
+
+    def monitor_fire(self):
+        """Monitoreo optimizado del sensor de fuego usando WebSocket"""
+        last_state = None
+        buffer = ""
+        last_notification_time = 0
+        NOTIFICATION_INTERVAL = 10  # Intervalo de 10 segundos entre notificaciones
+        
+        async def send_fire_status(status):
+            if not self.websocket_clients:
+                return
+                
+            message = json.dumps({
+                'type': 'fire_status',
+                'status': status,
+                'timestamp': int(time.time() * 1000)
+            })
+            
+            disconnected = set()
+            for client in self.websocket_clients:
+                try:
+                    await client.send(message)
+                except websockets.exceptions.ConnectionClosed:
+                    disconnected.add(client)
+                except Exception as e:
+                    print(f"Error enviando mensaje a cliente WebSocket: {e}")
+                    disconnected.add(client)
+            
+            self.websocket_clients.difference_update(disconnected)
+
+        while True:
+            try:
+                if self.arduino and self.arduino.in_waiting > 0:
+                    with self.arduino_lock:
+                        try:
+                            while self.arduino.in_waiting:
+                                char = self.arduino.read().decode()
+                                if char == '\n':
+                                    line = buffer.strip()
+                                    buffer = ""
+                                    
+                                    current_state = None
+                                    if "ALERTA: Llama detectada!" in line:
+                                        current_state = "FIRE_DETECTED"
+                                        self._update_chat_display(
+                                            "⚠️ ALERTA: ¡Se ha detectado fuego en la propiedad!",
+                                            'error'
+                                        )
+                                        
+                                        # Verificar si es tiempo de enviar otra notificación
+                                        current_time = time.time()
+                                        if current_time - last_notification_time >= NOTIFICATION_INTERVAL:
+                                            # Obtener números de teléfono de todos los usuarios
+                                            self.cursor.execute("SELECT phone FROM users WHERE phone IS NOT NULL AND phone != ''")
+                                            phones = self.cursor.fetchall()
+                                            
+                                            for phone in phones:
+                                                self.send_fire_notification(phone[0])
+                                            
+                                            last_notification_time = current_time
+                                            
+                                    elif "INFO: Llama apagada" in line:
+                                        current_state = "NO_FIRE"
+                                        self._update_chat_display(
+                                            "✅ INFO: No se detecta fuego en la propiedad",
+                                            'success'
+                                        )
+                                        # Resetear el tiempo de la última notificación cuando el fuego se apaga
+                                        last_notification_time = 0
+                                    
+                                    # Solo transmitir si hay cambio de estado
+                                    if current_state and current_state != last_state:
+                                        last_state = current_state
+                                        loop = asyncio.new_event_loop()
+                                        asyncio.set_event_loop(loop)
+                                        try:
+                                            loop.run_until_complete(send_fire_status(current_state))
+                                        finally:
+                                            loop.close()
+                                else:
+                                    buffer += char
+                                    
+                        except UnicodeDecodeError:
+                            buffer = ""
+                            pass
+                
+                time.sleep(0.01)
+                    
+            except Exception as e:
+                print(f"Error en monitoreo de fuego: {e}")
+                time.sleep(0.1)
+
+    def start_websocket_server(self):
+        try:
+            async def init_websocket():
+                async def websocket_handler(websocket):
+                    try:
+                        print(f"Nueva conexión WebSocket establecida")
+                        self.websocket_clients.add(websocket)
+                        try:
+                            await websocket.wait_closed()
+                        finally:
+                            self.websocket_clients.remove(websocket)
+                            print(f"Cliente WebSocket desconectado")
+                    except Exception as e:
+                        print(f"Error en websocket_handler: {e}")
+
+                async with websockets.serve(
+                    websocket_handler, 
+                    self.server_socket.getsockname()[0], 
+                    8765
+                ) as server:
+                    self.websocket_server = server
+                    await asyncio.Future()  # run forever
+
+            # Crear un nuevo event loop en un hilo separado
+            def run_websocket_server():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(init_websocket())
+
+            websocket_thread = threading.Thread(target=run_websocket_server, daemon=True)
+            websocket_thread.start()
+            print("Servidor WebSocket iniciado en puerto 8765")
+                
+        except Exception as e:
+            print(f"Error iniciando servidor WebSocket: {e}")
+
+    async def broadcast_fire_status(self, status):
+        if not self.websocket_clients:
+            return
+            
+        message = json.dumps({
+            'type': 'fire_status',
+            'status': status
+        })
+        
+        disconnected = set()
+        for client in self.websocket_clients:
+            try:
+                await client.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                disconnected.add(client)
+            except Exception as e:
+                print(f"Error enviando mensaje a cliente WebSocket: {e}")
+                disconnected.add(client)
+        
+        # Eliminar clientes desconectados
+        self.websocket_clients.difference_update(disconnected)
 
 if __name__ == "__main__":
     try:

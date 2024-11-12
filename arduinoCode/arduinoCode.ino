@@ -22,6 +22,13 @@ const int OPEN_POSITION = 120;    // Posición abierta
 unsigned long lastDHTRead = 0;
 const long DHT_INTERVAL = 2000; // Intervalo de lectura del DHT11 (2 segundos)
 
+// Configuración del sensor de llama
+#define SENSOR_PIN 3 // Pin al que está conectado el sensor de llama
+bool flameSensor;
+bool fire = false;
+unsigned long flameDetectedStartTime = 0; // Tiempo en que se detecta el inicio de llama
+const unsigned long FLAME_DETECTION_DELAY = 2000; // Tiempo en ms para confirmar detección (2 segundos)
+
 void setup() {
   Serial.begin(9600);
 
@@ -39,6 +46,9 @@ void setup() {
     doorServos[i].attach(servoPins[i]);
     doorServos[i].write(CLOSED_POSITION);  // Iniciar todas las puertas cerradas
   }
+
+  // Configurar sensor de llama
+  pinMode(SENSOR_PIN, INPUT); 
 }
 
 void loop() {
@@ -64,6 +74,9 @@ void loop() {
       else if(cmd == "READ_DHT") {
         readAndSendDHTData();
       }
+      else if(cmd == "FIRE DETECTED") {
+        checkFlameSensor();
+      }
     }
     Serial.flush();
   }
@@ -73,6 +86,9 @@ void loop() {
     readAndSendDHTData();
     lastDHTRead = millis();
   }
+
+  // Verificación del sensor de llama
+  checkFlameSensor();
 }
 
 void handleLEDCommand(String cmd, int ledIndex) {
@@ -129,4 +145,26 @@ void readAndSendDHTData() {
   Serial.print(",\"humedad\":");
   Serial.print(humedad);
   Serial.println("}");
+}
+
+void checkFlameSensor() {
+  flameSensor = digitalRead(SENSOR_PIN);
+
+  // Detectar la llama solo si el estado es alto durante 2 segundos
+  if (flameSensor == HIGH && !fire) {
+    if (flameDetectedStartTime == 0) {
+      flameDetectedStartTime = millis(); // Iniciar el tiempo de detección
+    } else if (millis() - flameDetectedStartTime >= FLAME_DETECTION_DELAY) {
+      fire = true;
+      Serial.println("ALERTA: Llama detectada!");
+      
+    }
+  }
+  else if (flameSensor == LOW) {
+    flameDetectedStartTime = 0; // Reiniciar el tiempo de detección
+    if (fire) {
+      Serial.println("INFO: Llama apagada.");
+      fire = false;
+    }
+  }
 }
