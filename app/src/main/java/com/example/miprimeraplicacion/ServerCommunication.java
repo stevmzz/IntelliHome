@@ -1,105 +1,263 @@
 package com.example.miprimeraplicacion;
 
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
 public class ServerCommunication {
     private static final String TAG = "ServerCommunication";
-    private static final String SERVER_IP = "192.168.46.157";
+    private static final String SERVER_IP = "192.168.100.45";
     private static final int SERVER_PORT = 1717;
-    private static final int SOCKET_TIMEOUT = 10000; // 10 segundos de timeout
+    private static final int SOCKET_TIMEOUT = 5000;
+    private static final int RECONNECT_DELAY = 5000;
+
+    private static WebSocket webSocket;
+    private static com.example.miprimeraplicacion.ServerCommunication.WebSocketListener currentListener;
+    private static boolean isConnecting = false;
+    private static final Object lock = new Object();
+
+    private static final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build();
 
     public interface ServerResponseListener {
         void onResponse(String response);
         void onError(String error);
     }
 
-    public static void sendToServer(final String message, final ServerResponseListener listener) {
-        new AsyncTask<Void, Void, String>() {
+    public interface WebSocketListener {
+        void onMessage(String message);
+        void onFailure(Throwable t);
+        void onClosed();
+    }
+
+    public static synchronized void initializeWebSocket(WebSocketListener listener) {
+        synchronized (lock) {
+            if (isConnecting) {
+                Log.d(TAG, "Connection already in progress");
+                return;
+            }
+            isConnecting = true;
+        }
+
+        Log.d(TAG, "Initializing WebSocket connection");
+        currentListener = listener;
+
+        if (webSocket != null) {
+            Log.d(TAG, "Closing existing WebSocket connection");
+            webSocket.close(1000, "New connection requested");
+            webSocket = null;
+        }
+
+        String wsUrl = "ws://" + SERVER_IP + ":8765";
+        Log.d(TAG, "Connecting to WebSocket URL: " + wsUrl);
+
+        Request request = new Request.Builder()
+                .url(wsUrl)
+                .build();
+
+        webSocket = client.newWebSocket(request, new okhttp3.WebSocketListener() {
             @Override
-            protected String doInBackground(Void... voids) {
+            public void onOpen(WebSocket socket, okhttp3.Response response) {
+                Log.d(TAG, "WebSocket connection opened successfully");
+                synchronized (lock) {
+                    isConnecting = false;
+                }
+            }
+
+            @Override
+            public void onMessage(WebSocket webSocket, String text) {
+                Log.d(TAG, "WebSocket message received: " + text);
+                if (currentListener != null) {
+                    currentListener.onMessage(text);
+                }
+            }
+
+            @Override
+            public void onFailure(WebSocket webSocket, Throwable t, okhttp3.Response response) {
+                Log.e(TAG, "WebSocket failure: " + t.getMessage());
+                t.printStackTrace();
+
+                synchronized (lock) {
+                    isConnecting = false;
+                }
+
+                if (currentListener != null) {
+                    currentListener.onFailure(t);
+                }
+
+                // Programar reconexión automática
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (currentListener != null && !isConnecting) {
+                        Log.d(TAG, "Attempting automatic reconnection...");
+                        initializeWebSocket(currentListener);
+                    }
+                }, RECONNECT_DELAY);
+            }
+
+            @Override
+            public void onClosing(WebSocket webSocket, int code, String reason) {
+                Log.d(TAG, "WebSocket closing: " + reason);
+                super.onClosing(webSocket, code, reason);
+            }
+
+            @Override
+            public void onClosed(WebSocket webSocket, int code, String reason) {
+                Log.d(TAG, "WebSocket closed: " + reason);
+                synchronized (lock) {
+                    isConnecting = false;
+                }
+
+                if (currentListener != null) {
+                    currentListener.onClosed();
+                }
+            }
+        });
+    }
+
+    public static void sendToServer(final String message, final ServerResponseListener listener) {
+        new AsyncTask<Void, Void, CommunicationResult>() {
+            @Override
+            protected CommunicationResult doInBackground(Void... voids) {
                 Socket socket = null;
                 PrintWriter out = null;
                 BufferedReader in = null;
 
                 try {
-                    // Log de inicio de conexión
                     Log.d(TAG, "Iniciando conexión con servidor: " + SERVER_IP + ":" + SERVER_PORT);
 
-                    // Crear y configurar el socket con timeout
                     socket = new Socket();
                     socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT), SOCKET_TIMEOUT);
-                    socket.setSoTimeout(SOCKET_TIMEOUT); // Timeout para lectura
+                    socket.setSoTimeout(SOCKET_TIMEOUT);
 
-                    // Configurar streams de entrada/salida
                     out = new PrintWriter(socket.getOutputStream(), true);
                     in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                    // Enviar mensaje
                     Log.d(TAG, "Enviando mensaje: " + message);
                     out.println(message);
-                    out.flush(); // Asegurar envío inmediato
+                    out.flush();
 
-                    // Esperar y leer respuesta
-                    Log.d(TAG, "Esperando respuesta del servidor...");
+                    Log.d(TAG, "Esperando respuesta...");
                     String response = in.readLine();
 
                     if (response == null) {
-                        Log.e(TAG, "Respuesta nula recibida del servidor");
-                        return "Error: No se recibió respuesta del servidor";
+                        Log.e(TAG, "No se recibió respuesta del servidor");
+                        return new CommunicationResult(false, "No se recibió respuesta del servidor");
                     }
 
                     Log.d(TAG, "Respuesta recibida: " + response);
-                    return response;
+                    return new CommunicationResult(true, response);
 
                 } catch (SocketTimeoutException e) {
                     Log.e(TAG, "Timeout de conexión: " + e.getMessage());
-                    return "Error: Tiempo de espera agotado - Verifica la conexión";
+                    return new CommunicationResult(false, "Tiempo de espera agotado - Verifica la conexión");
 
                 } catch (Exception e) {
                     Log.e(TAG, "Error de comunicación: " + e.getMessage());
-                    return "Error: " + e.getMessage();
+                    e.printStackTrace();
+                    return new CommunicationResult(false, e.getMessage());
 
                 } finally {
-                    // Cerrar todos los recursos
-                    try {
-                        Log.d(TAG, "Cerrando conexiones...");
-                        if (out != null) {
-                            out.close();
-                        }
-                        if (in != null) {
-                            in.close();
-                        }
-                        if (socket != null && !socket.isClosed()) {
-                            socket.close();
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error al cerrar conexiones: " + e.getMessage());
-                    }
+                    closeQuietly(in, out, socket);
                 }
             }
 
             @Override
-            protected void onPostExecute(String result) {
-                if (result != null) {
-                    if (result.startsWith("Error:")) {
-                        Log.e(TAG, "Error en comunicación: " + result);
-                        listener.onError(result.substring(7)); // Remover "Error: " del mensaje
+            protected void onPostExecute(CommunicationResult result) {
+                if (listener != null) {
+                    if (result.isSuccess) {
+                        listener.onResponse(result.message);
                     } else {
-                        Log.d(TAG, "Comunicación exitosa: " + result);
-                        listener.onResponse(result);
+                        listener.onError(result.message);
                     }
-                } else {
-                    Log.e(TAG, "Resultado nulo de la comunicación");
-                    listener.onError("Error desconocido en la comunicación");
                 }
             }
         }.execute();
+    }
+
+    public static boolean isWebSocketConnected() {
+        synchronized (lock) {
+            return webSocket != null && !isConnecting;
+        }
+    }
+
+    public static void reconnectWebSocket(WebSocketListener listener) {
+        Log.d(TAG, "Manual WebSocket reconnection requested");
+        closeWebSocket();
+        initializeWebSocket(listener);
+    }
+
+    public static void closeWebSocket() {
+        synchronized (lock) {
+            if (webSocket != null) {
+                Log.d(TAG, "Closing WebSocket connection");
+                try {
+                    webSocket.close(1000, "Closing connection");
+                } catch (Exception e) {
+                    Log.e(TAG, "Error closing WebSocket: " + e.getMessage());
+                }
+                webSocket = null;
+            }
+            isConnecting = false;
+            currentListener = null;
+        }
+    }
+
+    private static void closeQuietly(AutoCloseable... closeables) {
+        for (AutoCloseable closeable : closeables) {
+            if (closeable != null) {
+                try {
+                    closeable.close();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error cerrando recurso: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    private static class CommunicationResult {
+        final boolean isSuccess;
+        final String message;
+
+        CommunicationResult(boolean isSuccess, String message) {
+            this.isSuccess = isSuccess;
+            this.message = message;
+        }
+    }
+
+    // Método auxiliar para verificar la conexión
+    public static void checkConnection(final ServerResponseListener listener) {
+        sendToServer("PING", new ServerResponseListener() {
+            @Override
+            public void onResponse(String response) {
+                if (response.equals("PONG")) {
+                    listener.onResponse("Conexión establecida");
+                } else {
+                    listener.onError("Respuesta inválida del servidor");
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                listener.onError("Error de conexión: " + error);
+            }
+        });
     }
 }
