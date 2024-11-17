@@ -6,51 +6,77 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="8dp"
     android:layout_marginVertical="4dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Título de la propiedad -->
         <TextView
             android:id="@+id/titleTextView"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/black"
-            android:maxLines="2"
-            android:ellipsize="end"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:textColor="@color/primary_blue"
+            android:layout_marginBottom="8dp"/>
 
+        <!-- Descripción -->
         <TextView
             android:id="@+id/descriptionTextView"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
-            android:textColor="@color/gray"
-            android:layout_marginTop="8dp"
-            android:maxLines="3"
-            android:ellipsize="end"
-            app:layout_constraintTop_toBottomOf="@id/titleTextView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:layout_marginBottom="12dp"
+            android:maxLines="2"
+            android:ellipsize="end"/>
 
+        <!-- Fechas de la reserva -->
+        <TextView
+            android:id="@+id/datesTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"
+            android:drawableStart="@drawable/ic_calendar"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"/>
+
+        <!-- Precio total -->
         <TextView
             android:id="@+id/priceTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            android:textColor="@color/colorPrimary"
             android:textStyle="bold"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/descriptionTextView"
-            app:layout_constraintStart_toStartOf="parent"/>
+            android:textColor="@color/primary_blue"
+            android:drawableStart="@drawable/ic_money"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Línea separadora -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Estado de la reserva -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reserva Activa"
+            android:textColor="@color/success"
+            android:textSize="12sp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/status_badge_background"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"/>
+
+    </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

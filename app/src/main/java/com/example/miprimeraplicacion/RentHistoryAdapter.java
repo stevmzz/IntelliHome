@@ -44,9 +44,17 @@ public class RentHistoryAdapter extends RecyclerView.Adapter<RentHistoryAdapter.
         // Establecer descripción
         holder.descriptionTextView.setText(property.getDescription());
 
-        // Establecer precio formateado
-        String formattedPrice = priceFormatter.format(property.getPrice()) + " por noche";
-        holder.priceTextView.setText(formattedPrice);
+        // Establecer fechas y noches
+        String dateRange = String.format("Del %s al %s\n%d noche%s",
+                property.getCheckInDate(),
+                property.getCheckOutDate(),
+                property.getTotalNights(),
+                property.getTotalNights() > 1 ? "s" : "");
+        holder.datesTextView.setText(dateRange);
+
+        // Establecer precio total
+        String formattedPrice = priceFormatter.format(property.getTotalPrice());
+        holder.priceTextView.setText(String.format("Total pagado: %s", formattedPrice));
     }
 
     @Override
@@ -62,12 +70,14 @@ public class RentHistoryAdapter extends RecyclerView.Adapter<RentHistoryAdapter.
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView titleTextView;
         TextView descriptionTextView;
+        TextView datesTextView;
         TextView priceTextView;
 
         ViewHolder(View view) {
             super(view);
             titleTextView = view.findViewById(R.id.titleTextView);
             descriptionTextView = view.findViewById(R.id.descriptionTextView);
+            datesTextView = view.findViewById(R.id.datesTextView);
             priceTextView = view.findViewById(R.id.priceTextView);
         }
     }

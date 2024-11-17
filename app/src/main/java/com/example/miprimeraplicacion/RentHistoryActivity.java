@@ -131,15 +131,28 @@ public class RentHistoryActivity extends AppCompatActivity {
                 for (String propertyData : rentedProperties) {
                     if (!propertyData.trim().isEmpty()) {
                         String[] fields = propertyData.split("\\|");
-                        if (fields.length >= 3) {
+                        if (fields.length >= 6) {  // Actualizamos para manejar los 6 campos
                             try {
                                 String title = fields[0].trim();
                                 String description = fields[1].trim();
-                                double price = Double.parseDouble(fields[2].trim());
-                                properties.add(new RentedProperty(title, description, price));
+                                String checkInDate = fields[2].trim();
+                                String checkOutDate = fields[3].trim();
+                                int totalNights = Integer.parseInt(fields[4].trim());
+                                double totalPrice = Double.parseDouble(fields[5].trim());
+
+                                properties.add(new RentedProperty(
+                                        title,
+                                        description,
+                                        checkInDate,
+                                        checkOutDate,
+                                        totalNights,
+                                        totalPrice
+                                ));
                             } catch (NumberFormatException e) {
-                                Log.e(TAG, "Error parseando precio: " + e.getMessage());
+                                Log.e(TAG, "Error parseando números: " + e.getMessage());
                             }
+                        } else {
+                            Log.e(TAG, "Datos de propiedad incompletos: " + propertyData);
                         }
                     }
                 }

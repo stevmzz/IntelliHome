@@ -3,12 +3,19 @@ package com.example.miprimeraplicacion;
 public class RentedProperty {
     private String title;
     private String description;
-    private double price;
+    private String checkInDate;
+    private String checkOutDate;
+    private int totalNights;
+    private double totalPrice;
 
-    public RentedProperty(String title, String description, double price) {
+    public RentedProperty(String title, String description, String checkInDate,
+                          String checkOutDate, int totalNights, double totalPrice) {
         this.title = title != null ? title.trim() : "Sin título";
         this.description = description != null ? description.trim() : "Sin descripción";
-        this.price = price;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.totalNights = totalNights;
+        this.totalPrice = totalPrice;
     }
 
     public String getTitle() {
@@ -27,12 +34,36 @@ public class RentedProperty {
         this.description = description;
     }
 
-    public double getPrice() {
-        return price;
+    public String getCheckInDate() {
+        return checkInDate;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setCheckInDate(String checkInDate) {
+        this.checkInDate = checkInDate;
+    }
+
+    public String getCheckOutDate() {
+        return checkOutDate;
+    }
+
+    public void setCheckOutDate(String checkOutDate) {
+        this.checkOutDate = checkOutDate;
+    }
+
+    public int getTotalNights() {
+        return totalNights;
+    }
+
+    public void setTotalNights(int totalNights) {
+        this.totalNights = totalNights;
+    }
+
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(double totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
     @Override
@@ -40,7 +71,10 @@ public class RentedProperty {
         return "RentedProperty{" +
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", price=" + price +
+                ", checkInDate='" + checkInDate + '\'' +
+                ", checkOutDate='" + checkOutDate + '\'' +
+                ", totalNights=" + totalNights +
+                ", totalPrice=" + totalPrice +
                 '}';
     }
 }
