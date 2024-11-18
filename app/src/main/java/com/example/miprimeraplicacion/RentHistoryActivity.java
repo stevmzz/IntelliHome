@@ -131,7 +131,7 @@ public class RentHistoryActivity extends AppCompatActivity {
                 for (String propertyData : rentedProperties) {
                     if (!propertyData.trim().isEmpty()) {
                         String[] fields = propertyData.split("\\|");
-                        if (fields.length >= 6) {  // Actualizamos para manejar los 6 campos
+                        if (fields.length >= 7) {  // Ahora esperamos 7 campos
                             try {
                                 String title = fields[0].trim();
                                 String description = fields[1].trim();
@@ -139,6 +139,7 @@ public class RentHistoryActivity extends AppCompatActivity {
                                 String checkOutDate = fields[3].trim();
                                 int totalNights = Integer.parseInt(fields[4].trim());
                                 double totalPrice = Double.parseDouble(fields[5].trim());
+                                String status = fields[6].trim();
 
                                 properties.add(new RentedProperty(
                                         title,
@@ -146,27 +147,25 @@ public class RentHistoryActivity extends AppCompatActivity {
                                         checkInDate,
                                         checkOutDate,
                                         totalNights,
-                                        totalPrice
+                                        totalPrice,
+                                        status
                                 ));
                             } catch (NumberFormatException e) {
                                 Log.e(TAG, "Error parseando números: " + e.getMessage());
                             }
-                        } else {
-                            Log.e(TAG, "Datos de propiedad incompletos: " + propertyData);
                         }
                     }
                 }
 
                 adapter.updateProperties(properties);
                 updateEmptyView(properties.isEmpty());
-
             } else {
                 Log.e(TAG, "Respuesta no exitosa: " + response);
                 Toast.makeText(this, "Error cargando historial", Toast.LENGTH_SHORT).show();
                 updateEmptyView(true);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error procesando respuesta: " + e.getMessage(), e);
+            Log.e(TAG, "Error procesando respuesta: " + e.getMessage());
             Toast.makeText(this, "Error procesando datos", Toast.LENGTH_SHORT).show();
             updateEmptyView(true);
         } finally {

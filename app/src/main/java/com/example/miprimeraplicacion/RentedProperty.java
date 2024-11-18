@@ -7,15 +7,30 @@ public class RentedProperty {
     private String checkOutDate;
     private int totalNights;
     private double totalPrice;
+    private String status;
 
-    public RentedProperty(String title, String description, String checkInDate,
-                          String checkOutDate, int totalNights, double totalPrice) {
+    public RentedProperty(String title,
+                          String description,
+                          String checkInDate,
+                          String checkOutDate,
+                          int totalNights,
+                          double totalPrice,
+                          String status) {  // Constructor actualizado con nuevo parámetro
         this.title = title != null ? title.trim() : "Sin título";
         this.description = description != null ? description.trim() : "Sin descripción";
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.totalNights = totalNights;
         this.totalPrice = totalPrice;
+        this.status = status != null ? status : "INACTIVE";
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getTitle() {

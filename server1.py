@@ -128,76 +128,84 @@ class ChatServer:
             self.conn = sqlite3.connect('intellihome.db', check_same_thread=False)
             self.cursor = self.conn.cursor()
             
-            # Primero verificar si la columna fingerprint_registered existe
-            self.cursor.execute("PRAGMA table_info(users)")
-            columns = [col[1] for col in self.cursor.fetchall()]
+            # Verificar las tablas existentes
+            self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            existing_tables = {table[0] for table in self.cursor.fetchall()}
+            print("Tablas existentes:", existing_tables)
             
-            # Si la columna no existe, agregarla
-            if 'fingerprint_registered' not in columns:
+            # Verificar si la columna fingerprint_registered existe
+            if 'users' in existing_tables:
+                self.cursor.execute("PRAGMA table_info(users)")
+                columns = [col[1] for col in self.cursor.fetchall()]
+                
+                if 'fingerprint_registered' not in columns:
+                    print("Agregando columna fingerprint_registered a users")
+                    self.cursor.execute('''
+                        ALTER TABLE users
+                        ADD COLUMN fingerprint_registered BOOLEAN DEFAULT 0
+                    ''')
+                    self.conn.commit()
+                    print("Columna fingerprint_registered agregada exitosamente")
+            else:
+                print("Creando tabla users")
                 self.cursor.execute('''
-                    ALTER TABLE users
-                    ADD COLUMN fingerprint_registered BOOLEAN DEFAULT 0
+                    CREATE TABLE users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        full_name TEXT,
+                        email TEXT,
+                        description TEXT,
+                        hobbies TEXT,
+                        phone TEXT,
+                        verification TEXT,
+                        iban TEXT,
+                        birth_date TEXT,
+                        user_type TEXT,
+                        fingerprint_registered BOOLEAN DEFAULT 0,
+                        registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
                 ''')
-                self.conn.commit()
-                print("Columna fingerprint_registered agregada exitosamente")
-            
-            # Tabla de usuarios
-            self.cursor.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL,
-                    full_name TEXT,
-                    email TEXT,
-                    description TEXT,
-                    hobbies TEXT,
-                    phone TEXT,
-                    verification TEXT,
-                    iban TEXT,
-                    birth_date TEXT,
-                    user_type TEXT,
-                    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
 
-            # Tabla de propiedades
-            self.cursor.execute('''
-                CREATE TABLE IF NOT EXISTS properties (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    owner_id INTEGER,
-                    title TEXT NOT NULL,
-                    description TEXT,
-                    price_per_night REAL NOT NULL,
-                    location TEXT,
-                    capacity INTEGER,
-                    property_type TEXT,
-                    photos TEXT,
-                    amenities TEXT,
-                    rules TEXT,
-                    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (owner_id) REFERENCES users(id)
-                )
-            ''')
+            # Crear tabla properties si no existe
+            if 'properties' not in existing_tables:
+                print("Creando tabla properties")
+                self.cursor.execute('''
+                    CREATE TABLE properties (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        owner_id INTEGER,
+                        title TEXT NOT NULL,
+                        description TEXT,
+                        price_per_night REAL NOT NULL,
+                        location TEXT,
+                        capacity INTEGER,
+                        property_type TEXT,
+                        photos TEXT,
+                        amenities TEXT,
+                        rules TEXT,
+                        creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (owner_id) REFERENCES users(id)
+                    )
+                ''')
 
-            # Eliminar la tabla existente de propiedades rentadas si existe
-            self.cursor.execute("DROP TABLE IF EXISTS rented_properties")
-
-            # Crear la nueva tabla de propiedades rentadas con campos de fecha
-            self.cursor.execute("""
-                CREATE TABLE rented_properties (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    property_id INTEGER,
-                    rented_by TEXT,
-                    check_in_date DATE,
-                    check_out_date DATE,
-                    total_nights INTEGER,     -- Nueva columna
-                    total_price REAL,        -- Nueva columna
-                    rent_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    status TEXT DEFAULT 'active',
-                    FOREIGN KEY (property_id) REFERENCES properties(id),
-                    FOREIGN KEY (rented_by) REFERENCES users(username)
-                )
-            """)
+            # Crear tabla rented_properties si no existe
+            if 'rented_properties' not in existing_tables:
+                print("Creando tabla rented_properties")
+                self.cursor.execute("""
+                    CREATE TABLE rented_properties (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        property_id INTEGER,
+                        rented_by TEXT,
+                        check_in_date DATE,
+                        check_out_date DATE,
+                        total_nights INTEGER,
+                        total_price REAL,
+                        rent_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        status TEXT DEFAULT 'active',
+                        FOREIGN KEY (property_id) REFERENCES properties(id),
+                        FOREIGN KEY (rented_by) REFERENCES users(username)
+                    )
+                """)
             
             # Activar soporte para claves foráneas
             self.cursor.execute("PRAGMA foreign_keys = ON")
@@ -463,15 +471,14 @@ class ChatServer:
             self.properties_tree.delete(item)
             
         try:
-            # Modificar las columnas del Treeview para incluir el estado de alquiler
-            self.properties_tree['columns'] = ('ID', 'Propietario', 'Título', 'Ubicación', 'Precio/Noche', 'Tipo', 'Estado Alquiler', 'Fecha Creación')
+            # Modificar las columnas del Treeview - removemos la columna de estado
+            self.properties_tree['columns'] = ('ID', 'Propietario', 'Título', 'Ubicación', 'Precio/Noche', 'Tipo', 'Fecha Creación')
             
-            # Configurar las cabeceras de todas las columnas
             for col in self.properties_tree['columns']:
                 self.properties_tree.heading(col, text=col)
                 self.properties_tree.column(col, width=100)
 
-            # Consulta modificada para incluir información del inquilino
+            # Consulta simplificada - mostramos todas las propiedades
             self.cursor.execute("""
                 SELECT 
                     p.id, 
@@ -479,22 +486,16 @@ class ChatServer:
                     p.title, 
                     p.location, 
                     p.price_per_night, 
-                    p.property_type, 
-                    COALESCE(r.rented_by, 'Sin alquilar') as renter,
+                    p.property_type,
                     p.creation_date
                 FROM properties p
                 JOIN users u ON p.owner_id = u.id
-                LEFT JOIN (
-                    SELECT property_id, rented_by 
-                    FROM rented_properties 
-                    WHERE status = 'active'
-                ) r ON p.id = r.property_id
                 ORDER BY p.creation_date DESC
             """)
             
             for row in self.cursor.fetchall():
                 self.properties_tree.insert('', 'end', values=row)
-                
+                    
         except Exception as e:
             print(f"Error actualizando tabla de propiedades: {e}")
             messagebox.showerror("Error", f"Error actualizando tabla: {e}")
@@ -929,14 +930,12 @@ class ChatServer:
                     COALESCE(p.rules, ''), COALESCE(p.creation_date, CURRENT_TIMESTAMP)
                 FROM properties p 
                 JOIN users u ON p.owner_id = u.id
-                LEFT JOIN rented_properties r ON p.id = r.property_id AND r.status = 'active'
-                WHERE r.id IS NULL
                 ORDER BY p.creation_date DESC
             """
             
             self.cursor.execute(query)
             properties = self.cursor.fetchall()
-            print(f"Total de propiedades disponibles encontradas: {len(properties)}")
+            print(f"Total de propiedades encontradas: {len(properties)}")
             
             if not properties:
                 client_socket.sendall("SUCCESS:\n".encode('utf-8'))
@@ -1124,9 +1123,10 @@ class ChatServer:
                 
                 # Verificar que la propiedad exista y obtener sus datos
                 self.cursor.execute("""
-                    SELECT p.id, p.title, p.location, p.price_per_night, u.phone
+                    SELECT p.id, p.title, p.location, p.price_per_night, u2.phone
                     FROM properties p
-                    JOIN users u ON u.username = ?
+                    JOIN users u ON p.owner_id = u.id
+                    JOIN users u2 ON u2.username = ?
                     WHERE p.id = ?
                 """, (username, property_id))
                 
@@ -1211,7 +1211,13 @@ class ChatServer:
             username = message.split(':')[1].strip()
             print(f"Obteniendo historial para usuario: {username}")
             
-            # Consulta modificada para incluir fechas, noches y precio total
+            # Llamar al debug primero
+            self.debug_rent_history(username)
+            
+            # Obtener fecha actual para comparación
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            print(f"Fecha actual: {current_date}")
+            
             query = """
                 SELECT 
                     p.title,
@@ -1219,35 +1225,86 @@ class ChatServer:
                     r.check_in_date,
                     r.check_out_date,
                     r.total_nights,
-                    r.total_price
+                    r.total_price,
+                    CASE 
+                        WHEN DATE(?) BETWEEN DATE(r.check_in_date) AND DATE(r.check_out_date) THEN 'ACTIVE'
+                        WHEN DATE(?) > DATE(r.check_out_date) THEN 'COMPLETED'
+                        WHEN DATE(?) < DATE(r.check_in_date) THEN 'PENDING'
+                        ELSE 'INACTIVE'
+                    END as status
                 FROM rented_properties r
                 JOIN properties p ON r.property_id = p.id
-                WHERE r.rented_by = ? AND r.status = 'active'
+                WHERE r.rented_by = ?
                 ORDER BY r.rent_date DESC
             """
             
-            self.cursor.execute(query, (username,))
+            self.cursor.execute(query, (current_date, current_date, current_date, username))
             rentals = self.cursor.fetchall()
-            print(f"Encontradas {len(rentals)} propiedades alquiladas")
+            print(f"Consulta ejecutada. Encontradas {len(rentals)} propiedades alquiladas")
             
             if not rentals:
                 print("No se encontraron propiedades alquiladas")
                 client_socket.sendall("SUCCESS:\n".encode('utf-8'))
                 return
-                
+            
             rental_data = []
             for rental in rentals:
-                rental_str = (f"{rental[0]}|{rental[1]}|{rental[2]}|{rental[3]}|"
-                            f"{rental[4]}|{rental[5]}")
-                rental_data.append(rental_str)
+                # Log detallado de cada alquiler
+                print("\nProcesando alquiler:")
+                print(f"  Título: {rental[0]}")
+                print(f"  Descripción: {rental[1]}")
+                print(f"  Check-in: {rental[2]}")
+                print(f"  Check-out: {rental[3]}")
+                print(f"  Noches: {rental[4]}")
+                print(f"  Precio: {rental[5]}")
+                print(f"  Estado: {rental[6]}")
                 
+                rental_str = (f"{rental[0]}|{rental[1]}|{rental[2]}|{rental[3]}|"
+                        f"{rental[4]}|{rental[5]}|{rental[6]}")
+                rental_data.append(rental_str)
+            
             response = "SUCCESS:" + ";".join(rental_data)
-            print(f"Enviando respuesta con {len(rental_data)} propiedades")
+            print(f"\nEnviando respuesta con {len(rental_data)} propiedades")
+            print(f"Longitud de la respuesta: {len(response)} bytes")
             client_socket.sendall(f"{response}\n".encode('utf-8'))
             
         except Exception as e:
-            print(f"Error obteniendo historial: {str(e)}")
-            client_socket.sendall(f"ERROR:{str(e)}\n".encode('utf-8'))
+            error_msg = f"Error obteniendo historial: {str(e)}"
+            print(error_msg)
+            import traceback
+            traceback.print_exc()
+            client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+
+    def debug_rent_history(self, username):
+        print("\n=== Debug de Historial de Alquileres ===")
+        
+        try:
+            # Verificar total de alquileres
+            self.cursor.execute("SELECT COUNT(*) FROM rented_properties")
+            total = self.cursor.fetchone()[0]
+            print(f"Total de alquileres en la base de datos: {total}")
+            
+            # Verificar alquileres del usuario
+            self.cursor.execute("""
+                SELECT r.*, p.title 
+                FROM rented_properties r
+                JOIN properties p ON r.property_id = p.id
+                WHERE r.rented_by = ?
+            """, (username,))
+            
+            rentals = self.cursor.fetchall()
+            print(f"Alquileres encontrados para {username}: {len(rentals)}")
+            
+            for rental in rentals:
+                print(f"ID: {rental[0]}")
+                print(f"  Propiedad: {rental[-1]} (ID: {rental[1]})")
+                print(f"  Fechas: {rental[3]} - {rental[4]}")
+                print(f"  Estado: {rental[8]}")
+                print()
+                
+        except Exception as e:
+            print(f"Error en debug: {e}")
+        print("================================\n")
 
     def send_rental_notification(self, property_info, renter_phone):
         try:

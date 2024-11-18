@@ -83,4 +83,18 @@
         <item name="alertDialogStyle">@style/MaterialAlertDialog_Rounded</item>
     </style>
 
+    <style name="CustomDatePickerDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/primary_blue</item>
+        <item name="android:calendarViewStyle">@style/CustomCalendarView</item>
+    </style>
+
+    <style name="CustomCalendarView" parent="android:Widget.CalendarView">
+        <item name="android:focusedMonthDateColor">@color/primary_blue</item>
+        <item name="android:weekDayTextAppearance">@style/CustomCalendarWeekDay</item>
+    </style>
+
+    <style name="CustomCalendarWeekDay" parent="android:TextAppearance.Small">
+        <item name="android:textColor">@color/primary_blue</item>
+    </style>
+
 </resources>

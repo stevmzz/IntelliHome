@@ -284,6 +284,13 @@
                             </com.google.android.material.textfield.TextInputLayout>
                         </LinearLayout>
 
+                        <Button
+                            android:id="@+id/checkAvailabilityButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Verificar Disponibilidad"
+                            android:layout_marginTop="16dp"/>
+
                         <!-- Resumen de la reserva -->
                         <LinearLayout
                             android:id="@+id/bookingSummaryLayout"

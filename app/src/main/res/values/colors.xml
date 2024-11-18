@@ -23,4 +23,6 @@
     <color name="colorPrimary">#1976D2</color>
     <color name="success">#4CAF50</color>
     <color name="error_light">#FFE0E0</color>
+    <color name="available_day">#4CAF50</color>
+    <color name="unavailable_day">#F44336</color>
 </resources>

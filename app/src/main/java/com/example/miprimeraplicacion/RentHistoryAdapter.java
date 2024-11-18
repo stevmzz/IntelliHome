@@ -55,6 +55,14 @@ public class RentHistoryAdapter extends RecyclerView.Adapter<RentHistoryAdapter.
         // Establecer precio total
         String formattedPrice = priceFormatter.format(property.getTotalPrice());
         holder.priceTextView.setText(String.format("Total pagado: %s", formattedPrice));
+
+        holder.statusTextView.setText(property.getStatus());
+        // Color verde para ACTIVE, gris para INACTIVE
+        int color = property.getStatus().equals("ACTIVE") ?
+                context.getResources().getColor(R.color.success) :
+                context.getResources().getColor(R.color.gray);
+        holder.statusTextView.setTextColor(color);
+
     }
 
     @Override
@@ -72,6 +80,7 @@ public class RentHistoryAdapter extends RecyclerView.Adapter<RentHistoryAdapter.
         TextView descriptionTextView;
         TextView datesTextView;
         TextView priceTextView;
+        TextView statusTextView;
 
         ViewHolder(View view) {
             super(view);
@@ -79,6 +88,7 @@ public class RentHistoryAdapter extends RecyclerView.Adapter<RentHistoryAdapter.
             descriptionTextView = view.findViewById(R.id.descriptionTextView);
             datesTextView = view.findViewById(R.id.datesTextView);
             priceTextView = view.findViewById(R.id.priceTextView);
+            statusTextView = view.findViewById(R.id.statusTextView);
         }
     }
 }

@@ -67,15 +67,15 @@
 
         <!-- Estado de la reserva -->
         <TextView
+            android:id="@+id/statusTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Reserva Activa"
-            android:textColor="@color/success"
-            android:textSize="12sp"
             android:layout_marginTop="8dp"
             android:background="@drawable/status_badge_background"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"/>
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:textSize="12sp"
+            android:textStyle="bold"/>
 
     </LinearLayout>
 
