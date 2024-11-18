@@ -1,252 +1,309 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_surface">
 
-    <!-- Wave shape at the top -->
     <View
         android:id="@+id/waveShape"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="260dp"
-        android:background="@drawable/wave_background"/>
+        android:background="@drawable/wave_background"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:scrollbars="none">
+    <androidx.cardview.widget.CardView
+        android:id="@+id/logoCard"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="140dp"
+        app:cardCornerRadius="60dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <LinearLayout
+        <ImageView
+            android:id="@+id/imageLogo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingBottom="32dp"
-            android:paddingHorizontal="16dp">
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:src="@drawable/logo" />
+    </androidx.cardview.widget.CardView>
 
-            <!-- Logo -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/logoCard"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="140dp"
-                app:cardCornerRadius="60dp"
-                app:cardElevation="4dp">
+    <androidx.cardview.widget.CardView
+        android:id="@+id/mainCard"
+        android:layout_width="0dp"
+        android:layout_height="320dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginHorizontal="32dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/logoCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-                <ImageView
-                    android:id="@+id/imageLogo"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp"
-                    android:src="@drawable/logo" />
-            </androidx.cardview.widget.CardView>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <!-- Main content card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginHorizontal="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+            <ImageView
+                android:id="@+id/largeImage"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/casa1"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="320dp"
-                    android:padding="16dp">
+            <!-- Lights -->
 
-                    <ImageView
-                        android:id="@+id/largeImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/casita" />
+            <ImageButton
+                android:id="@+id/button1"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.37"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.496" />
 
-                    <!-- Luces -->
-                    <ImageButton
-                        android:id="@+id/button1"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="50dp"
-                        android:layout_marginTop="25dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off" />
+            <ImageButton
+                android:id="@+id/button2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.691"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.775" />
 
-                    <ImageButton
-                        android:id="@+id/button2"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="240dp"
-                        android:layout_marginTop="200dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off" />
+            <ImageButton
+                android:id="@+id/button3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.86"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.639" />
 
-                    <ImageButton
-                        android:id="@+id/button3"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="270dp"
-                        android:layout_marginTop="135dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off"
-                        android:paddingRight="20dp"/>
+            <ImageButton
+                android:id="@+id/button4"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.779"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.153" />
 
-                    <ImageButton
-                        android:id="@+id/button4"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="160dp"
-                        android:layout_marginTop="30dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off" />
+            <ImageButton
+                android:id="@+id/button5"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.153" />
 
-                    <ImageButton
-                        android:id="@+id/button5"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="240dp"
-                        android:layout_marginTop="30dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off" />
+            <ImageButton
+                android:id="@+id/button6"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.288"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.153" />
 
-                    <ImageButton
-                        android:id="@+id/button6"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="90dp"
-                        android:layout_marginTop="20dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off" />
+            <!-- Doors -->
 
-                    <ImageButton
-                        android:id="@+id/button7"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="157dp"
-                        android:layout_marginTop="185dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off" />
+            <ImageButton
+                android:id="@+id/button7"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.431"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.828" />
 
-                    <ImageButton
-                        android:id="@+id/button8"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="40dp"
-                        android:layout_marginTop="125dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/bombo_off" />
+            <ImageButton
+                android:id="@+id/button8"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bombo_off"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.431"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.153" />
 
-                    <!-- Puertas -->
-                    <ImageButton
-                        android:id="@+id/doorGarage"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="270dp"
-                        android:layout_marginTop="80dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/door_closed" />
+            <ImageButton
+                android:id="@+id/doorGarage"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/door_closed"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.561"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.862" />
 
-                    <ImageButton
-                        android:id="@+id/doorMain"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="157dp"
-                        android:layout_marginTop="120dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/door_closed" />
+            <ImageButton
+                android:id="@+id/doorMain"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/door_closed"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.73"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.644" />
 
-                    <ImageButton
-                        android:id="@+id/doorKitchen"
-                        android:layout_width="40dp"
-                        android:layout_height="30dp"
-                        android:layout_marginLeft="50dp"
-                        android:layout_marginTop="65dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/door_closed" />
+            <ImageButton
+                android:id="@+id/doorKitchen"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/door_closed"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.541" />
 
-                    <ImageButton
-                        android:id="@+id/doorLiving"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="170dp"
-                        android:layout_marginTop="40dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/door_closed" />
+            <ImageButton
+                android:id="@+id/doorLiving"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/door_closed"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.37"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.337" />
 
-                    <ImageButton
-                        android:id="@+id/doorBedroom1"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="120dp"
-                        android:layout_marginTop="200dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/door_closed" />
+            <ImageButton
+                android:id="@+id/doorBedroom1"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/door_closed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_bias="0.73"
+                app:layout_constraintVertical_bias="0.375"/>
 
-                    <ImageButton
-                        android:id="@+id/doorBedroom2"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="120dp"
-                        android:layout_marginTop="160dp"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/door_closed" />
+            <ImageButton
+                android:id="@+id/doorBedroom2"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/door_closed"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.948"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.375" />
 
-                </FrameLayout>
-            </androidx.cardview.widget.CardView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
-            <!-- Title -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Control de Luces"
-                android:textColor="@color/text_primary"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="16dp" />
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Control de Luces"
+        android:textColor="@color/text_primary"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/mainCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/humedad"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginBottom="16dp"
-                android:text="Ver Temperatura y Humedad"
-                android:textStyle="bold"
-                app:cornerRadius="28dp"
-                style="@style/Widget.MaterialComponents.Button"
-                android:backgroundTint="@color/primary_blue"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/humedad"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="16dp"
+        android:text="Ver Temperatura y Humedad"
+        android:textStyle="bold"
+        app:cornerRadius="28dp"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="@color/primary_blue"
+        app:layout_constraintTop_toBottomOf="@id/titleText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Exit button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/exitButton"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginBottom="16dp"
-                android:text="Salir"
-                android:textStyle="bold"
-                app:cornerRadius="28dp"
-                style="@style/Widget.MaterialComponents.Button"
-                android:backgroundTint="@color/primary_blue"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/exitButton"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="16dp"
+        android:text="Salir"
+        android:textStyle="bold"
+        app:cornerRadius="28dp"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="@color/primary_blue"
+        app:layout_constraintTop_toBottomOf="@id/humedad"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        </LinearLayout>
-    </ScrollView>
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
