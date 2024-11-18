@@ -12,6 +12,9 @@ import websockets
 import json
 import asyncio
 
+sidTwilio = 'ACd64bd0758f4a7eb9b8ea2e97daa1a032'
+tokenTwilio = '183d889b352f38548d1339d5e9335e38'
+
 class ChatServer:
     def __init__(self, host='192.168.100.45', port=1717):
     
@@ -1308,8 +1311,8 @@ class ChatServer:
 
     def send_rental_notification(self, property_info, renter_phone):
         try:
-            account_sid = 'AC5bad82a1e303ec57e6872ddde2473257'
-            auth_token = '9e4726664431826bfaa0c62258282548'
+            account_sid = sidTwilio
+            auth_token = tokenTwilio
             client = Client(account_sid, auth_token)
 
             # Formatear el número de teléfono
@@ -1503,8 +1506,8 @@ class ChatServer:
     def send_fire_notification(self, phone_number):
         """Envía notificación de WhatsApp cuando se detecta fuego"""
         try:
-            account_sid = 'AC5bad82a1e303ec57e6872ddde2473257'
-            auth_token = '9e4726664431826bfaa0c62258282548'
+            account_sid = sidTwilio
+            auth_token = tokenTwilio
             client = Client(account_sid, auth_token)
 
             # Formatear el número de teléfono
