@@ -97,4 +97,22 @@
         <item name="android:textColor">@color/primary_blue</item>
     </style>
 
+    <style name="AlertDialog.Earthquake" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/warning_dark</item>
+        <item name="colorSurface">@color/warning_light</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/AlertDialog.Earthquake.Title</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/AlertDialog.Earthquake.Body</item>
+    </style>
+
+    <style name="AlertDialog.Earthquake.Title" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/warning_dark</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="AlertDialog.Earthquake.Body" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">@color/warning_dark</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
 </resources>

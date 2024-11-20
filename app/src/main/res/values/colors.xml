@@ -25,4 +25,6 @@
     <color name="error_light">#FFE0E0</color>
     <color name="available_day">#4CAF50</color>
     <color name="unavailable_day">#F44336</color>
+    <color name="warning_light">#FFF3CD</color>
+    <color name="warning_dark">#856404</color>
 </resources>

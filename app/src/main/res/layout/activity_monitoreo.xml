@@ -15,6 +15,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/exitButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        app:icon="@drawable/ic_back"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        android:padding="0dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:insetLeft="0dp"
+        android:insetRight="0dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="Regresar"
+        app:iconTint="@color/white"
+        android:backgroundTint="@color/primary_blue"/>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/logoCard"
         android:layout_width="120dp"
@@ -288,21 +308,6 @@
         style="@style/Widget.MaterialComponents.Button"
         android:backgroundTint="@color/primary_blue"
         app:layout_constraintTop_toBottomOf="@id/titleText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/exitButton"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="16dp"
-        android:text="Salir"
-        android:textStyle="bold"
-        app:cornerRadius="28dp"
-        style="@style/Widget.MaterialComponents.Button"
-        android:backgroundTint="@color/primary_blue"
-        app:layout_constraintTop_toBottomOf="@id/humedad"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
