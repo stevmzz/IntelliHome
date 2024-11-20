@@ -83,4 +83,36 @@
         <item name="alertDialogStyle">@style/MaterialAlertDialog_Rounded</item>
     </style>
 
+    <style name="CustomDatePickerDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/primary_blue</item>
+        <item name="android:calendarViewStyle">@style/CustomCalendarView</item>
+    </style>
+
+    <style name="CustomCalendarView" parent="android:Widget.CalendarView">
+        <item name="android:focusedMonthDateColor">@color/primary_blue</item>
+        <item name="android:weekDayTextAppearance">@style/CustomCalendarWeekDay</item>
+    </style>
+
+    <style name="CustomCalendarWeekDay" parent="android:TextAppearance.Small">
+        <item name="android:textColor">@color/primary_blue</item>
+    </style>
+
+    <style name="AlertDialog.Earthquake" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/warning_dark</item>
+        <item name="colorSurface">@color/warning_light</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/AlertDialog.Earthquake.Title</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/AlertDialog.Earthquake.Body</item>
+    </style>
+
+    <style name="AlertDialog.Earthquake.Title" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/warning_dark</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="AlertDialog.Earthquake.Body" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">@color/warning_dark</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
 </resources>

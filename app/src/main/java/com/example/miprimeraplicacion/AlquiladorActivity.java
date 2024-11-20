@@ -63,6 +63,9 @@ public class AlquiladorActivity extends AppCompatActivity implements PropertyAda
     private boolean allowPets = false;
     private String currentSearchLocation = "";
 
+    private Button searchButton;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +98,7 @@ public class AlquiladorActivity extends AppCompatActivity implements PropertyAda
 
         // Inicialmente ocultamos el menú de filtros
         filterMenu.setVisibility(View.GONE);
+
     }
 
     private void setupSearchAutocomplete() {
@@ -103,7 +107,8 @@ public class AlquiladorActivity extends AppCompatActivity implements PropertyAda
                 searchEditText,
                 location -> {
                     currentSearchLocation = location;
-                    applyFilters();
+                    performSearch(); // Realizar la búsqueda inmediatamente al seleccionar una ubicación
+                    hideKeyboard(searchEditText);
                 }
         );
     }
@@ -345,6 +350,40 @@ public class AlquiladorActivity extends AppCompatActivity implements PropertyAda
         });
     }
 
+    private void performSearch() {
+        String searchText = searchEditText.getText().toString().trim();
+
+        if (searchText.isEmpty()) {
+            return; // No mostrar Toast ya que esto podría pasar al limpiar el campo
+        }
+
+        // Buscar la provincia basada en la entrada
+        List<String> matchingLocations = CostaRicaLocations.searchLocations(searchText);
+
+        if (matchingLocations.isEmpty()) {
+            Toast.makeText(this, "No se encontraron ubicaciones que coincidan", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Obtener la provincia del primer resultado
+        String selectedLocation = matchingLocations.get(0);
+        String province = selectedLocation.split(", ")[1];
+
+        // Filtrar propiedades por provincia
+        List<Property> filteredProperties = allProperties.stream()
+                .filter(property -> {
+                    String propertyLocation = property.getLocation();
+                    return propertyLocation != null && propertyLocation.endsWith(province);
+                })
+                .collect(Collectors.toList());
+
+        // Actualizar la UI
+        propertyAdapter.updateProperties(filteredProperties);
+        updateEmptyView(filteredProperties.isEmpty());
+
+    }
+
+
     private void showFilterSummary() {
         StringBuilder summary = new StringBuilder("Filtros aplicados:\n");
         if (maxPrice != Double.MAX_VALUE) {
@@ -405,29 +444,33 @@ public class AlquiladorActivity extends AppCompatActivity implements PropertyAda
                     .collect(Collectors.toList());
         }
 
-        // Filtrar por cantidad de habitaciones (asumiendo que agregarás este campo al modelo Property)
+        // Filtrar por cantidad de habitaciones
         if (roomsCount > 0) {
             filteredProperties = filteredProperties.stream()
                     .filter(property -> property.getRooms() >= roomsCount)
                     .collect(Collectors.toList());
         }
 
-        // Filtrar por ubicación
-        String location = locationHelper.getCurrentLocation();
-        if (!location.isEmpty()) {
+        // Filtrar por ubicación usando la provincia
+        if (!currentSearchLocation.isEmpty()) {
+            String province = currentSearchLocation.split(", ")[1];
             filteredProperties = filteredProperties.stream()
-                    .filter(property -> property.getLocation().equalsIgnoreCase(location))
+                    .filter(property -> {
+                        String propertyLocation = property.getLocation();
+                        return propertyLocation != null &&
+                                propertyLocation.endsWith(province);
+                    })
                     .collect(Collectors.toList());
         }
 
-        // Filtrar por mascotas (asumiendo que agregarás este campo al modelo Property)
+        // Filtrar por mascotas
         if (allowPets) {
             filteredProperties = filteredProperties.stream()
                     .filter(Property::getAllowsPets)
                     .collect(Collectors.toList());
         }
 
-        // Actualizar el RecyclerView con las propiedades filtradas
+        // Actualizar el RecyclerView
         propertyAdapter.updateProperties(filteredProperties);
         updateEmptyView(filteredProperties.isEmpty());
     }
