@@ -34,12 +34,24 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import androidx.annotation.NonNull;
+import java.util.Map;
+import java.util.HashMap;
+import java.io.InputStream;
+import android.graphics.BitmapFactory;
+import androidx.appcompat.app.AlertDialog;
+
+
+
+
 
 public class AddPropertyActivity extends AppCompatActivity {
     private static final String TAG = "AddPropertyActivity";
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int PERMISSION_REQUEST_CODE = 2;
     private String currentUsername;
+
+
 
     // UI Components
     private EditText titleEditText;
@@ -58,11 +70,15 @@ public class AddPropertyActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST = 2;  // Para los permisos de cámara
     private Uri photoURI;  // Para mantener la referencia de la foto tomada
 
+
     // Photo handling
     private ArrayList<String> selectedPhotosBase64;
     private PhotoAdapter photoAdapter;
 
     private LocationAutocompleteHelper locationHelper;
+
+    String decodedString = "some value";
+
 
     // Datos estáticos
     private final String[] PROPERTY_TYPES = {"Moderna", "Mansión", "Tecnológica", "Rústica"};
@@ -110,10 +126,41 @@ public class AddPropertyActivity extends AppCompatActivity {
                 }
         );
 
+        // Vincular el botón y configurar el listener
+        Button addPhotoButton = findViewById(R.id.addPhotoButton);
+        addPhotoButton.setOnClickListener(v -> openGallery());
+
         setupPropertyTypeDropdown();
         setupAmenitiesChips();
         setupPhotoSelection();
         setupListeners();
+    }
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+
+
+    private void checkAndRequestPermissions() {
+        String[] permissions = {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+        };
+
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(permission);
+            }
+        }
+
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this,
+                    listPermissionsNeeded.toArray(new String[0]),
+                    PERMISSION_REQUEST_CODE);
+        }
     }
 
     private void initializeViews() {
@@ -291,24 +338,60 @@ public class AddPropertyActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openImagePicker();
-            } else {
-                Toast.makeText(this, "Permiso denegado para acceder a las fotos",
-                        Toast.LENGTH_SHORT).show();
+            // Mapear los permisos solicitados a sus resultados
+            Map<String, Integer> perms = new HashMap<>();
+            for (int i = 0; i < permissions.length; i++) {
+                perms.put(permissions[i], grantResults[i]);
             }
-        } else if (requestCode == CAMERA_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                dispatchTakePictureIntent();
+
+            // Verificar si se concedieron los permisos esenciales
+            boolean allGranted = true;
+            for (String permission : permissions) {
+                if (perms.get(permission) != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
+                // Todos los permisos fueron concedidos
+                Toast.makeText(this, "Permisos concedidos. ¡Ahora puedes agregar imágenes!", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Permiso de cámara denegado",
-                        Toast.LENGTH_SHORT).show();
+                // Algunos permisos fueron denegados
+                Toast.makeText(this, "Permisos denegados. No se puede completar la acción.", Toast.LENGTH_SHORT).show();
+
+                // Opcional: Mostrar un diálogo para explicar por qué los permisos son importantes
+                boolean shouldShowRationale = false;
+                for (String permission : permissions) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                        shouldShowRationale = true;
+                        break;
+                    }
+                }
+                if (shouldShowRationale) {
+                    showPermissionExplanationDialog();
+                } else {
+                    // El usuario marcó "No volver a preguntar"
+                    Toast.makeText(this, "Debes habilitar los permisos desde la configuración.", Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
+
+    private void showPermissionExplanationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Se necesita este permiso para continuar.")
+                .setPositiveButton("Aceptar", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -322,11 +405,14 @@ public class AddPropertyActivity extends AppCompatActivity {
                 }
 
                 Bitmap bitmap = null;
+
                 if (requestCode == PICK_IMAGE_REQUEST && data != null && data.getData() != null) {
+                    // Procesar imagen seleccionada de la galería
                     Uri imageUri = data.getData();
-                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                    bitmap = decodeSampledBitmapFromUri(imageUri);
                 } else if (requestCode == CAMERA_REQUEST && photoURI != null) {
-                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoURI);
+                    // Procesar imagen capturada con la cámara
+                    bitmap = decodeSampledBitmapFromUri(photoURI);
                 }
 
                 if (bitmap != null) {
@@ -341,11 +427,39 @@ public class AddPropertyActivity extends AppCompatActivity {
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "Error processing image: " + e.getMessage());
+                Log.e(TAG, "Error procesando la imagen: " + e.getMessage(), e);
                 Toast.makeText(this, "Error al procesar la imagen", Toast.LENGTH_SHORT).show();
             }
         }
     }
+
+    private Bitmap decodeSampledBitmapFromUri(Uri uri) throws IOException {
+        // Obtén las dimensiones de la imagen
+        InputStream input = getContentResolver().openInputStream(uri);
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(input, null, options);
+        input.close();
+
+        // Calcula el factor de escala
+        int reqWidth = 800; // Ajusta según sea necesario
+        int reqHeight = 800;
+        int scaleFactor = Math.min(options.outWidth / reqWidth, options.outHeight / reqHeight);
+
+        // Decodifica la imagen con el factor de escala
+        options.inJustDecodeBounds = false;
+
+        input = getContentResolver().openInputStream(uri);
+
+        options.inSampleSize = 2; // Reducir tamaño
+        Bitmap bitmap = BitmapFactory.decodeStream(input);
+        input.close();
+
+        return bitmap;
+    }
+
+
 
     private String processImage(Bitmap bitmap) {
         try {

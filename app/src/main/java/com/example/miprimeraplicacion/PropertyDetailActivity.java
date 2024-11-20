@@ -71,6 +71,7 @@ public class PropertyDetailActivity extends AppCompatActivity {
 
     private void initializeViews() {
         propertyImageView = findViewById(R.id.propertyImageView);
+
         photoCountText = findViewById(R.id.photoCountText);
         titleTextView = findViewById(R.id.titleTextView);
         priceTextView = findViewById(R.id.priceTextView);
@@ -106,16 +107,19 @@ public class PropertyDetailActivity extends AppCompatActivity {
                 byte[] decodedString = Base64.decode(base64Photo, Base64.DEFAULT);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                 if (bitmap != null) {
-                    propertyImageView.setImageBitmap(bitmap);
+                    runOnUiThread(() -> propertyImageView.setImageBitmap(bitmap));
                 } else {
-                    propertyImageView.setImageResource(R.drawable.placeholder_home);
+                    runOnUiThread(() -> propertyImageView.setImageResource(R.drawable.placeholder_home));
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error displaying photo: " + e.getMessage());
-            propertyImageView.setImageResource(R.drawable.placeholder_home);
+            runOnUiThread(() -> propertyImageView.setImageResource(R.drawable.placeholder_home));
         }
     }
+
+
+
 
     private void updatePhotoCounter(int totalPhotos) {
         if (totalPhotos > 1) {
@@ -335,16 +339,15 @@ public class PropertyDetailActivity extends AppCompatActivity {
         try {
             List<String> photos = property.getPhotoUrls();
             if (photos != null && !photos.isEmpty()) {
-                displayPhoto(photos.get(0));
-                updatePhotoCounter(photos.size());
+                displayPhoto(photos.get(0)); // Mostrar solo la primera imagen
+                photoCountText.setVisibility(View.GONE); // Ocultar contador de fotos
             } else {
                 propertyImageView.setImageResource(R.drawable.placeholder_home);
-                photoCountText.setVisibility(View.GONE);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error setting up photos: " + e.getMessage());
             propertyImageView.setImageResource(R.drawable.placeholder_home);
-            photoCountText.setVisibility(View.GONE);
         }
     }
+
 }

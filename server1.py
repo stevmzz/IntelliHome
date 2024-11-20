@@ -744,70 +744,71 @@ class ChatServer:
             client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
 
     def handle_add_property(self, client_socket, message):
-        try:
-            print(f"Mensaje completo recibido: {message}")
-        
-            message_content = message.replace("ADD_PROPERTY:", "").strip()
-            data = message_content.split(',', maxsplit=9) # Dividir en exactamente 10 partes
-            
-            if len(data) != 10:
-                raise ValueError(f"Datos insuficientes. Esperados: 10, Recibidos: {len(data)}")
-            
-            # Obtener datos
-            username = data[0].strip()
-            title = data[1].strip()
-            description = data[2].strip()
-            price = float(data[3]) if data[3].strip() else 0
-            location = data[4].strip()
-            capacity = int(data[5]) if data[5].strip() else 0
-            property_type = data[6].strip()
-            amenities = data[7].strip()
-            photos = data[8].strip()
-            rules = data[9].strip()
+            try:
+                print(f"Mensaje completo recibido: {message}")
 
-            # Verificar usuario
-            self.cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-            user_result = self.cursor.fetchone()
-            if not user_result:
-                raise ValueError(f"Usuario no encontrado: {username}")
-            
-            owner_id = user_result[0]
+                message_content = message.replace("ADD_PROPERTY:", "").strip()
+                data = message_content.split(',', maxsplit=8) # Dividir en exactamente 10 partes
 
-            # Procesar amenidades - mantener el formato original con |
-            clean_amenities = amenities.strip()
-            print(f"Amenidades a guardar: {clean_amenities}")
+                if len(data) != 9:
+                    raise ValueError(f"Datos insuficientes. Esperados: 10, Recibidos: {len(data)}")
 
-            # Procesar reglas - guardar como texto plano
-            clean_rules = rules.strip()
-            print(f"Reglas a guardar: {clean_rules}")
+                # Obtener datos
+                username = data[0].strip()
+                title = data[1].strip()
+                description = data[2].strip()
+                price = float(data[3]) if data[3].strip() else 0
+                location = data[4].strip()
+                capacity = int(data[5]) if data[5].strip() else 0
+                property_type = data[6].strip()
+                amenities = data[7].strip()
+                photos = data[8].strip()
+                rules = data[9].strip()
 
-            # Insertar en la base de datos
-            self.cursor.execute("""
-                INSERT INTO properties (
-                    owner_id, title, description, price_per_night,
-                    location, capacity, property_type, amenities, photos, rules
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                owner_id, title, description, price,
-                location, capacity, property_type, 
-                clean_amenities,  # Amenidades separadas por |
-                photos, 
-                clean_rules      # Reglas como texto plano
-            ))
-            
-            self.conn.commit()
-            self.refresh_properties_table()
-            
-            print(f"Datos insertados en la base de datos:")
-            print(f"Amenidades: {clean_amenities}")
-            print(f"Reglas: {clean_rules}")
-            
-            client_socket.sendall("SUCCESS:PROPERTY_ADDED\n".encode('utf-8'))
-            
-        except Exception as e:
-            error_msg = f"Error al agregar propiedad: {str(e)}"
-            print(error_msg)
-            client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+                # Verificar usuario
+                self.cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+                user_result = self.cursor.fetchone()
+                if not user_result:
+                    raise ValueError(f"Usuario no encontrado: {username}")
+
+                owner_id = user_result[0]
+
+                # Procesar amenidades - mantener el formato original con |
+                clean_amenities = amenities.strip()
+                print(f"Amenidades a guardar: {clean_amenities}")
+
+                # Procesar reglas - guardar como texto plano
+                clean_rules = rules.strip()
+                print(f"Reglas a guardar: {clean_rules}")
+
+                # Insertar en la base de datos
+                self.cursor.execute("""
+                    INSERT INTO properties (
+                        owner_id, title, description, price_per_night,
+                        location, capacity, property_type, amenities, photos, rules
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    owner_id, title, description, price,
+                    location, capacity, property_type,
+                    clean_amenities,  # Amenidades separadas por |
+                    photos,
+                    clean_rules      # Reglas como texto plano
+                ))
+
+                self.conn.commit()
+                self.refresh_properties_table()
+
+                print(f"Datos insertados en la base de datos:")
+                print(f"Amenidades: {clean_amenities}")
+                print(f"Reglas: {clean_rules}")
+
+                client_socket.sendall("SUCCESS:PROPERTY_ADDED\n".encode('utf-8'))
+
+            except Exception as e:
+                error_msg = f"Error al agregar propiedad: {str(e)}"
+                print(error_msg)
+                client_socket.sendall(f"ERROR:{error_msg}\n".encode('utf-8'))
+
 
     def handle_delete_property(self, client_socket, message):
         try:

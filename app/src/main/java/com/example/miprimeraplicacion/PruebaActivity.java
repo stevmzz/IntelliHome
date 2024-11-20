@@ -484,12 +484,12 @@ public class PruebaActivity extends AppCompatActivity {
         }
     }
 
-    // Manejo de imágenes
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
+
 
     private void takePicture() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
