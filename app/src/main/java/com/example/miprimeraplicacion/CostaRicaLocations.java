@@ -139,6 +139,30 @@ public class CostaRicaLocations {
                 results.add(location);
             }
         }
+
+        // Obtener la provincia de la primera ubicación coincidente y agregar otras ubicaciones de esa provincia
+        if (!results.isEmpty()) {
+            String matchedLocation = results.get(0);
+            String province = matchedLocation.split(", ")[1]; // Provincia se encuentra después de la coma
+            results.addAll(getLocationsInProvince(province));
+        }
         return results;
+    }
+
+    private static List<String> getLocationsInProvince(String province) {
+        return locationsByProvince.getOrDefault(province, new ArrayList<>());
+    }
+
+    public static String getProvinceByLocation(String location) {
+        for (Map.Entry<String, List<String>> entry : locationsByProvince.entrySet()) {
+            if (entry.getValue().contains(location)) {
+                return entry.getKey();
+            }
+        }
+        return null; // Si no se encuentra la ubicación
+    }
+
+    public static List<String> getLocationsByProvince(String province) {
+        return locationsByProvince.getOrDefault(province, new ArrayList<>());
     }
 }
