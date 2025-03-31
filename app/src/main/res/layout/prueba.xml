@@ -1,558 +1,628 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#e0f7fa"
-    android:padding="16dp">
+    android:background="@color/background_surface"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <!-- Imagen en la parte superior -->
-        <ImageView
-            android:id="@+id/imageLogo"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/logo" />
+        <!-- Wave shape at the top -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:background="@drawable/wave_background"/>
 
-        <!-- Título -->
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Register"
-            android:textColor="#000"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <!-- Subtítulo -->
-        <TextView
-            android:id="@+id/subtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Create your new account"
-            android:textColor="#666"
-            android:textSize="16sp" />
-
-
+        <!-- Main content container -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/fullName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Full Name"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/username"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Username"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/email"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Email"
-                android:inputType="textEmailAddress"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/password"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Password"
-                android:inputType="textPassword"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-            <ImageButton
-                android:id="@+id/showHidePasswordButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ojo_contra"
-                />
-
-        </LinearLayout>
-
-        <!-- Campo de confirmación de contraseña -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-            <EditText
-                android:id="@+id/confirmPassword"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Confirm Password"
-                android:inputType="textPassword"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-
-            <ImageButton
-                android:id="@+id/showHideConfirmPasswordButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ojo_contra" />
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/description"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Describe Yourself"
-                android:padding="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/descripcion"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Hobbies"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/telefono"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Phone Number"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/Verificacion"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Verification: ¿Favorite food?"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/logo" />
-
-            <EditText
-                android:id="@+id/Iban"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Iban Account"
-                android:paddingStart="8dp"
-                android:textColor="#000"
-                android:textColorHint="#999" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:padding="24dp"
+            android:layout_marginTop="-50dp">
 
+            <!-- Logo y títulos -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                app:cardCornerRadius="50dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:id="@+id/imageLogo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="16dp"
+                    android:src="@drawable/logo"/>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Register"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Create your new account"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp"
+                android:layout_marginBottom="24dp"/>
+            <!-- Personal Information Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Type User"
-                android:textColor="#000"
-                android:textSize="16sp"
-                android:layout_marginBottom="4dp" />
+                android:text="Personal Information"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
 
-            <LinearLayout
+            <!-- Full Name -->
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_person"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/logo" />
-
-                <RadioGroup
-                    android:id="@+id/userTypeGroup"
-                    android:layout_width="0dp"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/fullName"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:paddingStart="8dp">
+                    android:hint="Full Name"
+                    android:inputType="textPersonName|textCapWords"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-                    <RadioButton
-                        android:id="@+id/radioArrendador"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Arrendador"
-                        android:textColor="#000"
-                        android:paddingEnd="16dp" />
+            <!-- Username -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_user"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                    <RadioButton
-                        android:id="@+id/radioAlquilador"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Alquilador"
-                        android:textColor="#000" />
-                </RadioGroup>
-            </LinearLayout>
-        </LinearLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/username"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Username"
+                    android:inputType="text"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="vertical"
-            android:padding="8dp">
+            <!-- Email -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_email"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Email"
+                    android:inputType="textEmailAddress"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Security Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Date Birth"
-                android:textColor="#000"
-                android:textSize="16sp"
-                android:layout_marginBottom="4dp" />
+                android:text="Security"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
 
-            <LinearLayout
+            <!-- Password -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/passwordLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_lock"
+                app:startIconTint="@color/primary_blue"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/ojo_contra"
+                app:endIconTint="@color/text_secondary"
+                app:errorEnabled="true"
+                app:helperText="Must include: uppercase, lowercase, number, special character"
+                app:helperTextEnabled="true"
+                app:errorIconDrawable="@null"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/logo" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Password"
+                    android:inputType="textPassword"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-                <EditText
+            <!-- Confirm Password -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/confirmPasswordLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:startIconDrawable="@drawable/ic_lock"
+                app:startIconTint="@color/primary_blue"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/ojo_contra"
+                app:endIconTint="@color/text_secondary"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/confirmPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Confirm Password"
+                    android:inputType="textPassword"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Después de la sección de Contact Information y antes de Additional Information -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Biometric Authentication"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/fingerprintIcon"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:src="@drawable/ic_fingerprint"
+                        android:layout_marginBottom="16dp"
+                        app:tint="@color/primary_blue"/>
+
+                    <TextView
+                        android:id="@+id/fingerprintStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fingerprint not registered"
+                        android:textColor="@color/error"
+                        android:layout_marginBottom="16dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonRegisterFingerprint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Register Fingerprint"
+                        app:icon="@drawable/ic_fingerprint"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Profile Photo Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile Photo"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/imageViewPhoto"
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/photo_background"
+                        android:layout_marginBottom="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonSelectPhoto"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gallery"
+                            android:layout_marginEnd="8dp"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            app:icon="@drawable/ic_gallery"
+                            app:iconTint="@color/primary_blue"
+                            android:textColor="@color/primary_blue"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTakePhoto"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Camera"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            app:icon="@drawable/ic_camera"
+                            app:iconTint="@color/primary_blue"
+                            android:textColor="@color/primary_blue"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Profile Information -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile Information"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Description -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_description"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Describe Yourself"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:gravity="top"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Hobbies -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_hobbies"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/descripcion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Hobbies"
+                    android:inputType="textMultiLine"
+                    android:minLines="2"
+                    android:gravity="top"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Contact Information -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Contact Information"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Phone -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_phone"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                app:counterEnabled="true"
+                app:counterMaxLength="8"
+                app:helperText="Enter 8 digits"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/telefono"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Phone Number"
+                    android:inputType="phone"
+                    android:maxLength="8"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Security Question -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_lock"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/Verificacion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Verification: ¿Favorite food?"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- IBAN -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:startIconDrawable="@drawable/ic_bank"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                app:helperText="Format: CR + 20-25 numbers"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/Iban"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="IBAN Account"
+                    android:inputType="textCapCharacters"/>
+            </com.google.android.material.textfield.TextInputLayout>
+            <!-- Additional Information Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Additional Information"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- User Type Selection -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="User Type"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <RadioGroup
+                        android:id="@+id/userTypeGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioArrendador"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Arrendador"
+                            android:layout_marginEnd="32dp"/>
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioAlquilador"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Alquilador"/>
+                    </RadioGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Birth Date -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:startIconDrawable="@drawable/ic_calendar"
+                app:startIconTint="@color/primary_blue"
+                app:errorEnabled="true"
+                app:helperText="Format: DD/MM/YYYY"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/fechaNacimiento"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="DD/MM/AAAA"
-                    android:paddingStart="8dp"
-                    android:textColor="#000"
-                    android:textColorHint="#999" />
-            </LinearLayout>
+                    android:hint="Birth Date"
+                    android:inputType="date"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Terms and Conditions Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Terms and Conditions"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_marginBottom="16dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="IntelliHome"
+                        android:textColor="@color/primary_blue"
+                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:layout_marginBottom="16dp"/>
+
+                    <androidx.core.widget.NestedScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="8dp">
+
+                            <!-- Términos detallados -->
+                            <TextView
+                                style="@style/TermsHeader"
+                                android:text="1. Service Terms"/>
+
+                            <TextView
+                                style="@style/TermsContent"
+                                android:text="By using IntelliHome's services, you agree to these binding terms. Our platform connects property owners with potential renters, facilitating secure and efficient property management."/>
+
+                            <TextView
+                                style="@style/TermsHeader"
+                                android:text="2. User Responsibilities"/>
+
+                            <TextView
+                                style="@style/TermsContent"
+                                android:text="• Maintain accurate profile information\n• Respect property listings and communication guidelines\n• Follow local housing laws and regulations\n• Report any suspicious activities"/>
+
+                            <TextView
+                                style="@style/TermsHeader"
+                                android:text="3. Privacy &amp; Data Protection"/>
+
+                            <TextView
+                                style="@style/TermsContent"
+                                android:text="We protect your personal information according to GDPR and local privacy laws. Your data is encrypted and securely stored."/>
+
+                            <TextView
+                                style="@style/TermsHeader"
+                                android:text="4. Financial Terms"/>
+
+                            <TextView
+                                style="@style/TermsContent"
+                                android:text="• All transactions are processed securely\n• Service fees are clearly displayed\n• Cancellation policies apply as specified"/>
+
+                            <TextView
+                                style="@style/TermsHeader"
+                                android:text="5. Property Guidelines"/>
+
+                            <TextView
+                                style="@style/TermsContent"
+                                android:text="• Accurate property descriptions required\n• Regular maintenance expectations\n• Safety standards compliance"/>
+                        </LinearLayout>
+                    </androidx.core.widget.NestedScrollView>
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/termsCheckbox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="I have read and accept the terms and conditions"
+                        android:layout_marginBottom="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="end">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonReject"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Reject"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:textColor="@color/error"
+                            android:layout_marginEnd="8dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonAccept"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Accept"
+                            android:backgroundTint="@color/primary_blue"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Continue Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonContinue"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Continue"
+                android:textStyle="bold"
+                app:cornerRadius="28dp"
+                android:backgroundTint="@color/primary_blue"
+                android:layout_marginBottom="24dp"/>
+
         </LinearLayout>
-
-
-
-        <Button
-            android:id="@+id/buttonSelectPhoto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Subir Foto" />
-
-        <ImageView
-            android:id="@+id/imageViewPhoto"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_below="@id/buttonSelectPhoto"
-            android:layout_marginTop="16dp"
-            android:contentDescription="Imagen seleccionada"
-            android:scaleType="centerCrop" />
-
-        <LinearLayout
-            android:layout_marginTop="30dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edittext_background"
-            android:orientation="vertical"
-            android:padding="8dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Términos y Condiciones de Uso de Intellihome"
-                android:textColor="#000"
-                android:textSize="16sp"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Fecha de entrada en vigor: [Fecha]"
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Bienvenido a Intellihome. Al acceder y utilizar nuestra aplicación, usted acepta cumplir con los siguientes términos y condiciones. Si no está de acuerdo con estos términos, le solicitamos que no utilice nuestra aplicación."
-                android:textColor="#000"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="1. Definiciones\n• Intellihome: Se refiere a la aplicación móvil y/o plataforma web que facilita el alquiler de propiedades.\n• Usuario: Cualquier persona que se registre y utilice Intellihome.\n• Propiedad: Cualquier inmueble disponible para alquiler a través de Intellihome."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="2. Aceptación de Términos\nAl registrarse y utilizar Intellihome, usted acepta estos términos y condiciones en su totalidad. Nos reservamos el derecho a modificar estos términos en cualquier momento, por lo que recomendamos revisarlos periódicamente."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="3. Registro de Usuario\nPara utilizar algunas funcionalidades de la aplicación, es necesario crear una cuenta. El Usuario se compromete a proporcionar información veraz y actualizada. Es responsabilidad del Usuario mantener la confidencialidad de sus credenciales de acceso."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="4. Uso de la Aplicación\n• Intellihome permite a los Usuarios buscar y alquilar propiedades.\n• El Usuario se compromete a utilizar la aplicación solo para fines lícitos y de acuerdo con las leyes aplicables."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="5. Propiedades\n• Las propiedades listadas en Intellihome son ofrecidas por propietarios y agentes inmobiliarios.\n• Intellihome no es responsable de la veracidad, disponibilidad o estado de las propiedades."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="6. Comisiones y Pagos\n• Intellihome puede cobrar comisiones por los servicios ofrecidos. Las tarifas serán comunicadas claramente antes de confirmar cualquier transacción.\n• El Usuario acepta realizar los pagos a través de los métodos habilitados en la aplicación."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="7. Política de Cancelación\nLas políticas de cancelación varían según cada propiedad y serán indicadas en el anuncio correspondiente. Es responsabilidad del Usuario revisar estas políticas antes de realizar una reserva."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="8. Limitación de Responsabilidad\nIntellihome no será responsable de daños directos, indirectos, incidentales o consecuentes que surjan del uso de la aplicación o de la imposibilidad de uso."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="9. Propiedad Intelectual\nTodo el contenido de Intellihome, incluyendo textos, gráficos y logotipos, está protegido por derechos de propiedad intelectual. Queda prohibida la reproducción o distribución sin autorización."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="10. Modificaciones a los Términos\nNos reservamos el derecho de modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor al ser publicadas en la aplicación. El uso continuado de Intellihome tras la publicación de cambios implica la aceptación de los mismos."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="11. Legislación Aplicable\nEstos términos se rigen por las leyes de [país/estado]. Cualquier disputa relacionada con el uso de Intellihome será resuelta en los tribunales de [ciudad/estado]."
-                android:textColor="#000"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="12. Contacto\nPara cualquier pregunta o inquietud sobre estos términos, por favor contáctenos en [correo electrónico]."
-                android:textColor="#000"
-                android:layout_marginBottom="8dp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="end">
-
-                <Button
-                    android:id="@+id/buttonAccept"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Aceptar"
-                    android:backgroundTint="@color/white" />
-
-                <Button
-                    android:id="@+id/buttonReject"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Rechazar"
-                    android:layout_marginStart="8dp"
-                    android:backgroundTint="@color/white" />
-            </LinearLayout>
-        </LinearLayout>
-
-
-        <Button
-            android:id="@+id/buttonContinue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="#80deea"
-            android:text="Continue"
-            android:textColor="#ffffff"
-            android:textStyle="bold" />
-
     </LinearLayout>
-
-
-
-    </ScrollView>
+</androidx.core.widget.NestedScrollView>

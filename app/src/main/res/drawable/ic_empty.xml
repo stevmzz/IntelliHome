@@ -1,0 +1,31 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Casa principal -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M60,20L100,50V95H20V50L60,20Z"/>
+
+    <!-- Símbolo circular -->
+    <path
+        android:fillColor="#BDBDBD"
+        android:pathData="M60,50m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0"/>
+
+    <!-- Signo de exclamación -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,42h4v12h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,56h4v4h-4z"/>
+
+    <!-- Línea base -->
+    <path
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M30,105h60"/>
+</vector>
